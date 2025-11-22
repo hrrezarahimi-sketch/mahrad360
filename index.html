@@ -17,7 +17,7 @@
     .grade-A{color:#10b981}.grade-B{color:#3b82f6}.grade-C{color:#f59e0b}.grade-D{color:#ef4444}.grade-E{color:#dc2626}
   </style>
 </head>
-<body class="min-vh-100 d-flex align-items-center justify-content-center">
+<body>
 
 <div class="container" id="app">
   <!-- ورود -->
@@ -42,8 +42,8 @@
           <p class="text-white-50">واحد: {{ currentUser.dept }} | سمت: {{ currentUser.position }}</p>
         </div>
         <div class="text-start">
-          <div class="shamsi-date" id="shamsi">1404/09/01</div>
-          <div id="clock" class="text-white-50 fs-4">00:00:00</div>
+          <div class="shamsi-date" id="shamsi"></div>
+          <div id="clock" class="text-white-50 fs-4"></div>
         </div>
       </div>
 
@@ -55,30 +55,32 @@
 
       <div class="tab-content">
         <div class="tab-pane active" id="home">
-          <div class="row text-center">
-            <div class="col-12">
-              <h4 class="text-info mb-3">وضعیت عملکرد شما</h4>
-              <p>گرید فعلی: <strong :class="'grade-'+currentUser.grade">{{ currentUser.grade || "C" }}</strong></p>
-              <p>پاداش/کسور: <strong :class="currentUser.bonus>=0?'text-success':'text-danger'">{{ (currentUser.bonus||0).toLocaleString() }} تومان</strong></p>
-              <canvas id="radarChart" height="320"></canvas>
-            </div>
+          <div class="text-center">
+            <h4 class="text-info mb-3">وضعیت عملکرد شما</h4>
+            <p>گرید: <strong :class="'grade-'+currentUser.grade">{{ currentUser.grade }}</strong></p>
+            <p>پاداش/کسور: <strong :class="currentUser.bonus>=0?'text-success':'text-danger'">{{ currentUser.bonus.toLocaleString() }} تومان</strong></p>
+            <canvas id="radarChart" height="320"></canvas>
           </div>
         </div>
 
         <div class="tab-pane" id="all" v-if="isAdmin">
-          <input type="file" @change="loadExcel" accept=".xlsx,.xls" class="form-control mb-3">
+          <input type="file" @change="loadExcel" accept=".xlsx" class="form-control mb-3">
           <input type="text" v-model="search" placeholder="جستجو..." class="form-control mb-3">
           <div class="table-responsive">
             <table class="table table-dark table-hover text-center">
-              <thead><tr><th>کد</th><th>نام</th><th>واحد سازمانی</th><th>سمت</th><th>گرید</th><th>پاداش</th></tr></thead>
+              <thead class="table-light">
+                <tr>
+                  <th>کد</th><th>نام و نام خانوادگی</th><th>واحد سازمانی</th><th>سمت</th><th>گرید</th><th>پاداش (تومان)</th>
+                </tr>
+              </thead>
               <tbody>
-                <tr v-for="p in filtered">
+                <tr v-for="p in filtered" :key="p.code">
                   <td>{{ p.code }}</td>
                   <td>{{ p.name }}</td>
                   <td>{{ p.dept }}</td>
                   <td>{{ p.position }}</td>
                   <td><span :class="'grade-'+p.grade">{{ p.grade }}</span></td>
-                  <td :class="p.bonus>=0?'text-success':'text-danger'">{{ Number(p.bonus).toLocaleString() }}</td>
+                  <td :class="p.bonus>=0?'text-success':'text-danger'">{{ p.bonus.toLocaleString() }}</td>
                 </tr>
               </tbody>
             </table>
@@ -86,8 +88,8 @@
         </div>
 
         <div class="tab-pane" id="form">
-          <h4 class="text-white">فرم ارزیابی عملکرد - کد {{ currentUser.code }}</h4>
-          <p class="text-info">فرم‌های ۳۴۵۰۳ تا ۳۴۵۱۶ به زودی فعال می‌شوند.</p>
+          <h4 class="text-white">فرم ارزیابی عملکرد</h4>
+          <p class="text-info">به زودی فعال می‌شود...</p>
         </div>
       </div>
     </div>
@@ -104,8 +106,7 @@ Vue.createApp({
     filtered() {
       if (!this.search) return this.personnel;
       return this.personnel.filter(p => 
-        p.name.includes(this.search) || 
-        p.code.includes(this.search)
+        p.name.includes(this.search) || p.code.includes(this.search)
       );
     }
   },
@@ -122,9 +123,7 @@ Vue.createApp({
         this.loggedIn = true;
         this.startClock();
         this.$nextTick(() => this.drawRadar());
-      } else {
-        alert("کد پرسنلی یافت نشد. ابتدا مدیر اکسل را بارگذاری کند.");
-      }
+      } else alert("کد پرسنلی یافت نشد!");
     },
     loadExcel(e) {
       if (!this.isAdmin) return;
@@ -136,12 +135,12 @@ Vue.createApp({
         const wb = XLSX.read(data, {type:'array'});
         const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         this.personnel = raw.map(p => ({
-          code: p["کد پرسنلی"] || p["کدپرسی"],
+          code: p["کد پرسنلی"],
           name: p["نام و نام خانوادگی"],
-          dept: p["واحد سازمانی"] || p["واحد"],        // قبول هر دو اسم
-          position: p["سمت"],
+          dept: p["واحد سازمانی"] || p["واحد"],
+          position: p["سمت"] || p["سمت شغلی"] || "-",
           grade: "C",
-          bonus: Math.floor(Math.random()*8000000)-2000000
+          bonus: Math.floor(Math.random()*10000000) - 3000000
         }));
         alert(`${this.personnel.length} نفر با موفقیت بارگذاری شد!`);
       };
@@ -153,12 +152,11 @@ Vue.createApp({
       new Chart(ctx, {
         type: 'radar',
         data: {
-          labels: ['کیفیت','سرعت','همکاری','مسئولیت‌پذیری','نوآوری','انضباط'],
-          datasets: [{ label: 'عملکرد شما', data: [88,76,92,85,79,90],
-            backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9', pointBackgroundColor: '#0ea5e9'
+          labels: ['کیفیت','سرعت','همکاری','مسئولیت','نوآوری','انضباط'],
+          datasets: [{ label: 'عملکرد', data: [88,76,92,85,79,90],
+            backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9'
           }]
-        },
-        options: { scales: { r: { min:0, max:100 } } }
+        }
       });
     },
     startClock() {
