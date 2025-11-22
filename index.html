@@ -10,87 +10,82 @@
   <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <style>
-    body {background: linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;font-family:'Vazirmatn',sans-serif;}
-    .card {background:#1e293b;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.7);}
-    .btn-primary {background:#0ea5e9;border:none;}
-    .shamsi-date {font-size:1.6rem;font-weight:bold;color:#0ea5e9;}
+    body{background:linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;font-family:'Vazirmatn',sans-serif}
+    .card{background:#1e293b;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.7)}
+    .btn-primary{background:#0ea5e9;border:none}
+    .shamsi-date{font-size:1.6rem;font-weight:bold;color:#0ea5e9}
     .grade-A{color:#10b981}.grade-B{color:#3b82f6}.grade-C{color:#f59e0b}.grade-D{color:#ef4444}.grade-E{color:#dc2626}
   </style>
 </head>
 <body>
 
-<div class="container" id="app">
-  <!-- ورود -->
+<div class="container py-4" id="app">
+
+  <!-- صفحه ورود -->
   <div v-if="!loggedIn" class="row justify-content-center mt-5">
     <div class="col-md-4">
       <div class="card p-5 text-center">
-        <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="120" class="mb-4">
+        <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="130" class="mb-4">
         <h3 class="text-white mb-4">سامانه ارزیابی عملکرد ۳۶۰ درجه ماهراد</h3>
         <input type="text" v-model="loginCode" class="form-control mb-3" placeholder="کد پرسنلی" autofocus>
-        <button @click="login" class="btn btn-primary w-100">ورود به سامانه</button>
-        <small class="text-white-50 mt-3 d-block">مدیر سیستم: admin</small>
+        <button @click="login" class="btn btn-primary w-100 fs-5">ورود</button>
+        <small class="text-white-50 mt-3 d-block">مدیر سیستم → admin</small>
       </div>
     </div>
   </div>
 
-  <!-- داشبورد -->
-  <div v-else class="p-4">
-    <div class="card p-5">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="text-white">خوش آمدید، {{ currentUser.name }} عزیز</h2>
-          <p class="text-white-50">واحد: {{ currentUser.dept }} | سمت: {{ currentUser.position }}</p>
-        </div>
-        <div class="text-start">
-          <div class="shamsi-date" id="shamsi"></div>
-          <div id="clock" class="text-white-50 fs-4"></div>
+  <!-- داشبورد اصلی -->
+  <div v-else class="card p-5">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <h2 class="text-white">خوش آمدید، {{ currentUser.name }} عزیز</h2>
+        <p class="text-white-50 h5">واحد: {{ currentUser.dept }} | سمت: {{ currentUser.position }}</p>
+      </div>
+      <div class="text-start">
+        <div class="shamsi-date" id="shamsi"></div>
+        <div id="clock" class="text-white-50 fs-4"></div>
+      </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
+      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#home">داشبورد شخصی</a></li>
+      <li class="nav-item" v-if="isAdmin"><a class="nav-link" data-bs-toggle="tab" href="#all">لیست پرسنل</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#form">فرم ارزیابی</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="home" class="text-center">
+        <h4 class="text-info mb-4">وضعیت عملکرد</h4>
+        <p class="fs-4">گرید: <strong :class="'grade-'+currentUser.grade">{{ currentUser.grade }}</strong></p>
+        <p class="fs-4">پاداش/کسور: <strong :class="currentUser.bonus>=0?'text-success':'text-danger'">{{ currentUser.bonus.toLocaleString() }} تومان</strong></p>
+        <canvas id="radarChart" class="mt-4" height="340"></canvas>
+      </div>
+
+      <div class="tab-pane" id="all" v-if="isAdmin">
+        <input type="file" @change="loadExcel" accept=".xlsx,.xls" class="form-control mb-3">
+        <input type="text" v-model="search" placeholder="جستجو نام یا کد..." class="form-control mb-3">
+        <div class="table-responsive">
+          <table class="table table-dark table-striped text-center">
+            <thead class="table-primary">
+              <tr><th>کد</th><th>نام و نام خانوادگی</th><th>واحد سازمانی</th><th>سمت</th><th>گرید</th><th>پاداش (تومان)</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in filtered" :key="p.code">
+                <td>{{ p.code }}</td>
+                <td>{{ p.name }}</td>
+                <td>{{ p.dept }}</td>
+                <td>{{ p.position }}</td>
+                <td><span :class="'grade-'+p.grade">{{ p.grade }}</span></td>
+                <td :class="p.bonus>=0?'text-success':'text-danger'">{{ p.bonus.toLocaleString() }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <ul class="nav nav-tabs mb-4">
-        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#home">داشبورد شخصی</a></li>
-        <li class="nav-item" v-if="isAdmin"><a class="nav-link" data-bs-toggle="tab" href="#all">لیست کامل پرسنل</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#form">فرم ارزیابی</a></li>
-      </ul>
-
-      <div class="tab-content">
-        <div class="tab-pane active" id="home">
-          <div class="text-center">
-            <h4 class="text-info mb-3">وضعیت عملکرد شما</h4>
-            <p>گرید: <strong :class="'grade-'+currentUser.grade">{{ currentUser.grade }}</strong></p>
-            <p>پاداش/کسور: <strong :class="currentUser.bonus>=0?'text-success':'text-danger'">{{ currentUser.bonus.toLocaleString() }} تومان</strong></p>
-            <canvas id="radarChart" height="320"></canvas>
-          </div>
-        </div>
-
-        <div class="tab-pane" id="all" v-if="isAdmin">
-          <input type="file" @change="loadExcel" accept=".xlsx" class="form-control mb-3">
-          <input type="text" v-model="search" placeholder="جستجو..." class="form-control mb-3">
-          <div class="table-responsive">
-            <table class="table table-dark table-hover text-center">
-              <thead class="table-light">
-                <tr>
-                  <th>کد</th><th>نام و نام خانوادگی</th><th>واحد سازمانی</th><th>سمت</th><th>گرید</th><th>پاداش (تومان)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="p in filtered" :key="p.code">
-                  <td>{{ p.code }}</td>
-                  <td>{{ p.name }}</td>
-                  <td>{{ p.dept }}</td>
-                  <td>{{ p.position }}</td>
-                  <td><span :class="'grade-'+p.grade">{{ p.grade }}</span></td>
-                  <td :class="p.bonus>=0?'text-success':'text-danger'">{{ p.bonus.toLocaleString() }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="tab-pane" id="form">
-          <h4 class="text-white">فرم ارزیابی عملکرد</h4>
-          <p class="text-info">به زودی فعال می‌شود...</p>
-        </div>
+      <div class="tab-pane" id="form">
+        <h4 class="text-white">فرم ارزیابی عملکرد</h4>
+        <p class="text-info fs-5">به زودی فعال می‌شود...</p>
       </div>
     </div>
   </div>
@@ -105,8 +100,9 @@ Vue.createApp({
   computed: {
     filtered() {
       if (!this.search) return this.personnel;
-      return this.personnel.filter(p => 
-        p.name.includes(this.search) || p.code.includes(this.search)
+      const s = this.search.trim();
+      return this.personnel.filter(p =>
+        p.name.includes(s) || p.code.includes(s) || p.dept.includes(s)
       );
     }
   },
@@ -114,7 +110,7 @@ Vue.createApp({
     login() {
       if (this.loginCode === "admin") {
         this.isAdmin = true;
-        this.currentUser = { name: "مدیر سیستم", dept: "مدیریت", position: "مدیر کل", grade: "A", bonus: 0 };
+        this.currentUser = {name:"مدیر سیستم",dept:"مدیریت",position:"مدیر کل",grade:"A",bonus:0};
         this.loggedIn = true; this.startClock(); return;
       }
       const user = this.personnel.find(p => p.code == this.loginCode);
@@ -122,41 +118,45 @@ Vue.createApp({
         this.currentUser = user;
         this.loggedIn = true;
         this.startClock();
-        this.$nextTick(() => this.drawRadar());
+        this.$nextTick(()=>this.drawRadar());
       } else alert("کد پرسنلی یافت نشد!");
     },
     loadExcel(e) {
       if (!this.isAdmin) return;
       const file = e.target.files[0];
-      if (!file) return;
       const reader = new FileReader();
       reader.onload = (ev) => {
         const data = new Uint8Array(ev.target.result);
         const wb = XLSX.read(data, {type:'array'});
         const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         this.personnel = raw.map(p => ({
-          code: p["کد پرسنلی"],
-          name: p["نام و نام خانوادگی"],
-          dept: p["واحد سازمانی"] || p["واحد"],
-          position: p["سمت"] || p["سمت شغلی"] || "-",
-          grade: "C",
-          bonus: Math.floor(Math.random()*10000000) - 3000000
+          code:     p["کد پرسنلی"]?.toString() || "",
+          name:     p["نام و نام خانوادگی"] || "",
+          dept:     p["و احد سازمانی"] || p["واحد سازمانی"] || p["واحد"] || "نامشخص",
+          position: p["سمت"] || p["سمت شغلی"] || "نامشخص",
+          grade:    "C",
+          bonus:    Math.floor(Math.random()*10000000) - 3000000
         }));
         alert(`${this.personnel.length} نفر با موفقیت بارگذاری شد!`);
       };
       reader.readAsArrayBuffer(file);
     },
     drawRadar() {
-      const ctx = document.getElementById('radarChart');
+      const ctx = document.getElementById('radarChart')?.getContext('2d');
       if (!ctx) return;
       new Chart(ctx, {
         type: 'radar',
         data: {
           labels: ['کیفیت','سرعت','همکاری','مسئولیت','نوآوری','انضباط'],
-          datasets: [{ label: 'عملکرد', data: [88,76,92,85,79,90],
-            backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9'
+          datasets: [{
+            label: 'عملکرد شما',
+            data: [88,76,92,85,79,90],
+            backgroundColor: 'rgba(14,165,233,0.2)',
+            borderColor: '#0ea5e9',
+            pointBackgroundColor: '#0ea5e9'
           }]
-        }
+        },
+        options: { scales: { r: { min:0, max:100 }}}
       });
     },
     startClock() {
