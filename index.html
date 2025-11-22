@@ -20,8 +20,7 @@
 <body class="min-vh-100 d-flex align-items-center justify-content-center">
 
 <div class="container" id="app">
-  <!-- صفحه ورود -->
-  ورود -->
+  <!-- ورود -->
   <div v-if="!loggedIn" class="row justify-content-center mt-5">
     <div class="col-md-4">
       <div class="card p-5 text-center">
@@ -32,7 +31,6 @@
         <small class="text-white-50 mt-3 d-block">مدیر سیستم: admin</small>
       </div>
     </div>
-  >
   </div>
 
   <!-- داشبورد -->
@@ -40,8 +38,8 @@
     <div class="card p-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 class="text-white">خوش آمدید، {{ currentUser["نام و نام خانوادگی"] || "مدیر" }} عزیز</h2>
-          <p class="text-white-50">واحد: {{ currentUser["واحد"] || "-" }} | سمت: {{ currentUser["سمت"] || "-" }}</p>
+          <h2 class="text-white">خوش آمدید، {{ currentUser.name }} عزیز</h2>
+          <p class="text-white-50">واحد: {{ currentUser.dept }} | سمت: {{ currentUser.position }}</p>
         </div>
         <div class="text-start">
           <div class="shamsi-date" id="shamsi">1404/09/01</div>
@@ -56,7 +54,6 @@
       </ul>
 
       <div class="tab-content">
-        <!-- داشبورد شخصی -->
         <div class="tab-pane active" id="home">
           <div class="row text-center">
             <div class="col-12">
@@ -68,19 +65,18 @@
           </div>
         </div>
 
-        <!-- لیست پرسنل (فقط مدیر) -->
         <div class="tab-pane" id="all" v-if="isAdmin">
           <input type="file" @change="loadExcel" accept=".xlsx,.xls" class="form-control mb-3">
-          <input type="text" v-model="search" placeholder="جستجو نام یا کد..." class="form-control mb- mb-3">
+          <input type="text" v-model="search" placeholder="جستجو..." class="form-control mb-3">
           <div class="table-responsive">
             <table class="table table-dark table-hover text-center">
-              <thead><tr><th>کد</th><th>نام و نام خانوادگی</th><th>واحد</th><th>سمت</th><th>گرید</th><th>پاداش</th></tr></thead>
+              <thead><tr><th>کد</th><th>نام</th><th>واحد سازمانی</th><th>سمت</th><th>گرید</th><th>پاداش</th></tr></thead>
               <tbody>
-                <tr v-for="p in filtered" :key="p['کد پرسنلی']">
-                  <td>{{ p["کد پرسنلی"] }}</td>
-                  <td>{{ p["نام و نام خانوادگی"] }}</td>
-                  <td>{{ p["واحد"] }}</td>
-                  <td>{{ p["سمت"] }}</td>
+                <tr v-for="p in filtered">
+                  <td>{{ p.code }}</td>
+                  <td>{{ p.name }}</td>
+                  <td>{{ p.dept }}</td>
+                  <td>{{ p.position }}</td>
                   <td><span :class="'grade-'+p.grade">{{ p.grade }}</span></td>
                   <td :class="p.bonus>=0?'text-success':'text-danger'">{{ Number(p.bonus).toLocaleString() }}</td>
                 </tr>
@@ -89,9 +85,8 @@
           </div>
         </div>
 
-        <!-- فرم ارزیابی -->
         <div class="tab-pane" id="form">
-          <h4 class="text-white">فرم ارزیابی عملکرد - کد پرسنلی {{ currentUser["کد پرسنلی"] }}</h4>
+          <h4 class="text-white">فرم ارزیابی عملکرد - کد {{ currentUser.code }}</h4>
           <p class="text-info">فرم‌های ۳۴۵۰۳ تا ۳۴۵۱۶ به زودی فعال می‌شوند.</p>
         </div>
       </div>
@@ -109,8 +104,8 @@ Vue.createApp({
     filtered() {
       if (!this.search) return this.personnel;
       return this.personnel.filter(p => 
-        (p["نام و نام خانوادگی"]||"").includes(this.search) || 
-        (p["کد پرسنلی"]||"").includes(this.search)
+        p.name.includes(this.search) || 
+        p.code.includes(this.search)
       );
     }
   },
@@ -118,12 +113,10 @@ Vue.createApp({
     login() {
       if (this.loginCode === "admin") {
         this.isAdmin = true;
-        this.currentUser = { "نام و نام خانوادگی": "مدیر سیستم", grade: "A", bonus: 0 };
-        this.loggedIn = true;
-        this.startClock();
-        return;
+        this.currentUser = { name: "مدیر سیستم", dept: "مدیریت", position: "مدیر کل", grade: "A", bonus: 0 };
+        this.loggedIn = true; this.startClock(); return;
       }
-      const user = this.personnel.find(p => String(p["کد پرسنلی"]) === String(this.loginCode));
+      const user = this.personnel.find(p => p.code == this.loginCode);
       if (user) {
         this.currentUser = user;
         this.loggedIn = true;
@@ -141,11 +134,15 @@ Vue.createApp({
       reader.onload = (ev) => {
         const data = new Uint8Array(ev.target.result);
         const wb = XLSX.read(data, {type:'array'});
-        this.personnel = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        this.personnel.forEach(p => {
-          p.grade = p.grade || "C";
-          p.bonus = p.bonus || Math.floor(Math.random()*8000000)-2000000;
-        });
+        const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        this.personnel = raw.map(p => ({
+          code: p["کد پرسنلی"] || p["کدپرسی"],
+          name: p["نام و نام خانوادگی"],
+          dept: p["واحد سازمانی"] || p["واحد"],        // قبول هر دو اسم
+          position: p["سمت"],
+          grade: "C",
+          bonus: Math.floor(Math.random()*8000000)-2000000
+        }));
         alert(`${this.personnel.length} نفر با موفقیت بارگذاری شد!`);
       };
       reader.readAsArrayBuffer(file);
@@ -156,13 +153,9 @@ Vue.createApp({
       new Chart(ctx, {
         type: 'radar',
         data: {
-          labels: ['کیفیت کار','سرعت','همکاری تیمی','مسئولیت‌پذیری','نوآوری','انضباط'],
-          datasets: [{
-            label: 'عملکرد شما',
-            data: [88,76,92,85,79,90],
-            backgroundColor: 'rgba(14,165,233,0.2)',
-            borderColor: '#0ea5e9',
-            pointBackgroundColor: '#0ea5e9'
+          labels: ['کیفیت','سرعت','همکاری','مسئولیت‌پذیری','نوآوری','انضباط'],
+          datasets: [{ label: 'عملکرد شما', data: [88,76,92,85,79,90],
+            backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9', pointBackgroundColor: '#0ea5e9'
           }]
         },
         options: { scales: { r: { min:0, max:100 } } }
