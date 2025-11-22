@@ -15,89 +15,73 @@
     .btn-primary{background:#0ea5e9;border:none}
     .shamsi-date{font-size:1.8rem;font-weight:bold;color:#0ea5e9}
     .grade-A{color:#10b981}.grade-B{color:#3b82f6}.grade-C{color:#f59e0b}.grade-D{color:#ef4444}.grade-E{color:#dc2626}
-    th{background:#334155;color:white}
   </style>
 </head>
-<body>
+<body class="min-vh-100 d-flex align-items-center justify-content-center">
 
-<div class="container py-5" id="app">
-
+<div class="container" id="app">
   <!-- ورود -->
   <div v-if="!loggedIn" class="row justify-content-center">
-    <div class="col-md-4">
+    <div class="col-md-5">
       <div class="card p-5 text-center">
-        <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="140" class="mb-4">
+        <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="150" class="mb-4">
         <h3 class="text-white mb-4">سامانه ارزیابی عملکرد ۳۶۰ درجه ماهراد</h3>
         <input type="text" v-model="loginCode" class="form-control mb-3 fs-4 text-center" placeholder="کد پرسنلی" autofocus>
-        <button @click="login" class="btn btn-primary w-100 fs-5">ورود به سامانه</button>
-        <small class="text-white-50 mt-3 d-block">مدیر → admin</small>
+        <button @click="login" class="btn btn-primary w-100 py-3 fs-5">ورود به سامانه</button>
+        <small class="text-white-50 mt-3 d-block">مدیر سیستم: admin</small>
       </div>
     </div>
   </div>
 
   <!-- داشبورد -->
-  <div v-else>
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-4">
-          <div>
-            <h2 class="text-white mb-1">خوش آمدید، {{ currentUser.name }} عزیز</h2>
-            <p class="text-info fs-5">واحد: {{ currentUser.dept }} | سمت: {{ currentUser.position }}</p>
-          </div>
-          <div class="text-start">
-            <div class="shamsi-date" id="shamsi"></div>
-            <div id="clock" class="text-white-50 fs-4"></div>
-          </div>
+  <div v-else class="card p-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+      <div>
+        <h2 class="text-white">خوش آمدید، {{ currentUser.name }} عزیز</h2>
+        <p class="text-info fs-4">واحد: {{ currentUser.dept }} | سمت: {{ currentUser.position }}</p>
+      </div>
+      <div class="text-start">
+        <div class="shamsi-date" id="shamsi"></div>
+        <div id="clock" class="text-white-50 fs-3"></div>
+      </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4">
+      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#home">داشبورد شخصی</a></li>
+      <li class="nav-item" v-if="isAdmin"><a class="nav-link" data-bs-toggle="tab" href="#all">لیست کامل پرسنل</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#form">فرم ارزیابی</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="home" class="text-center py-5">
+        <h3 class="text-info mb-5">وضعیت عملکرد شما</h3>
+        <p class="fs-2">گرید فعلی: <strong :class="'grade-'+currentUser.grade">{{ currentUser.grade }}</strong></p>
+        <p class="fs-2 mb-5">پاداش/کسور: <strong :class="currentUser.bonus>=0?'text-success':'text-danger'">{{ currentUser.bonus.toLocaleString() }} تومان</strong></p>
+        <canvas id="radarChart" height="400"></canvas>
+      </div>
+
+      <div class="tab-pane" id="all" v-if="isAdmin">
+        <input type="file" @change="loadExcel" accept=".xlsx" class="form-control mb-3">
+        <input type="text" v-model="search" placeholder="جستجو نام، کد یا واحد..." class="form-control mb-3">
+        <div class="table-responsive">
+          <table class="table table-dark table-striped text-center">
+            <thead class="table-light"><tr><th>کد</th><th>نام</th><th>واحد سازمانی</th><th>سمت</th><th>گرید</th><th>پاداش</th></tr></thead>
+            <tbody>
+              <tr v-for="p in filtered">
+                <td>{{ p.code }}</td>
+                <td>{{ p.name }}</td>
+                <td>{{ p.dept }}</td>
+                <td>{{ p.position }}</td>
+                <td><strong :class="'grade-'+p.grade">{{ p.grade }}</strong></td>
+                <td :class="p.bonus>=0?'text-success':'text-danger'">{{ p.bonus.toLocaleString() }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        <ul class="nav nav-tabs mb-4">
-          <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#home">داشبورد شخصی</a></li>
-          <li class="nav-item" v-if="isAdmin"><a class="nav-link" data-bs-toggle="tab" href="#all">لیست پرسنل</a></li>
-          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#form">فرم ارزیابی</a></li>
-        </ul>
-
-        <div class="tab-content">
-          <!-- داشبورد شخصی -->
-          <div class="tab-pane active" id="home" class="text-center py-4">
-            <h4 class="text-info mb-4">وضعیت عملکرد ماه جاری</h4>
-            <div class="row justify-content-center">
-              <div class="col-8 col-md-6">
-                <p class="fs-3">گرید: <strong :class="'grade-'+currentUser.grade">{{ currentUser.grade }}</strong></p>
-                <p class="fs-3">پاداش/کسور: <strong :class="currentUser.bonus>=0?'text-success':'text-danger'">{{ Math.abs(currentUser.bonus).toLocaleString() }} تومان {{ currentUser.bonus>=0?'(پاداش)':'(کسور)' }}</strong></p>
-                <canvas id="radarChart" class="mt-4"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- لیست پرسنل -->
-          <div class="tab-pane" id="all" v-if="isAdmin">
-            <input type="file" @change="loadExcel" accept=".xlsx" class="form-control mb-3">
-            <input type="text" v-model="search" placeholder="جستجو..." class="form-control mb-4">
-            <div class="table-responsive">
-              <table class="table table-dark table-hover text-center align-middle">
-                <thead>
-                  <tr>
-                    <th>کد</th><th>نام و نام خانوادگی</th><th>واحد سازمانی</th><th>سمت</th><th>گرید</th><th>پاداش (تومان)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="p in filtered">
-                    <td>{{ p.code }}</td>
-                    <td>{{ p.name }}</td>
-                    <td>{{ p.dept }}</td>
-                    <td>{{ p.position }}</td>
-                    <td><span :class="'grade-'+p.grade">{{ p.grade }}</span></td>
-                    <td :class="p.bonus>=0?'text-success':'text-danger'">{{ p.bonus.toLocaleString() }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="tab-pane" id="form">
-            <h3 class="text-white">فرم ارزیابی به زودی فعال می‌شود</h3>
-          </div>
-        </div>
+      <div class="tab-pane" id="form">
+        <h3 class="text-white text-center py-5">فرم‌های ارزیابی به زودی فعال می‌شود</h3>
       </div>
     </div>
   </div>
@@ -106,16 +90,14 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 Vue.createApp({
-  data() { return {
-    loginCode: '', loggedIn: false, currentUser: {}, personnel: [], search: '', isAdmin: false
-  }},
+  data() { return { loginCode: '', loggedIn: false, currentUser: {}, personnel: [], search: '', isAdmin: false }},
   computed: {
     filtered() {
       if (!this.search) return this.personnel;
       const s = this.search.toLowerCase();
-      return this.personnel.filter(p =>
-        p.name.toLowerCase().includes(s) ||
-        p.code.includes(s) ||
+      return this.personnel.filter(p => 
+        p.name.toLowerCase().includes(s) || 
+        p.code.includes(s) || 
         p.dept.toLowerCase().includes(s)
       );
     }
@@ -124,16 +106,12 @@ Vue.createApp({
     login() {
       if (this.loginCode === "admin") {
         this.isAdmin = true;
-        this.currentUser = {name:"مدیر سیستم",dept:"مدیریت",position:"مدیر کل",grade:"A",bonus:0};
+        this.currentUser = {name:"مدیر سیستم", dept:"مدیریت", position:"مدیر کل", grade:"A", bonus:0};
         this.loggedIn = true; this.startClock(); return;
       }
-      const user = this.personnel.find(p => p.code === this.loginCode);
-      if (user) {
-        this.currentUser = user;
-        this.loggedIn = true;
-        this.startClock();
-        this.$nextTick(()=>this.drawRadar());
-      } else alert("کد پرسنلی یافت نشد!");
+      const user = this.personnel.find(p => p.code === this.loginCode.trim());
+      if (user) { this.currentUser = user; this.loggedIn = true; this.startClock(); this.$nextTick(()=>this.drawRadar()); }
+      else alert("کد پرسنلی یافت نشد!");
     },
     loadExcel(e) {
       if (!this.isAdmin) return;
@@ -143,35 +121,39 @@ Vue.createApp({
         const data = new Uint8Array(ev.target.result);
         const wb = XLSX.read(data, {type:'array'});
         const raw = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+
+        // تابع پاک کردن همه فاصله‌ها و نیم‌فاصله‌های فارسی
+        const clean = str => str ? str.toString().replace(/[\u200C\u200B\u200D\uFEFF\s]/g, '') : '';
+
         this.personnel = raw.map(p => {
-          // پاک کردن همه فاصله‌های نامرئی و معمولی از کلیدها
-          const cleanKey = k => k ? k.toString().replace(/[\u200C\u200B\uA0\s]/g, '') : '';
-          const keys = Object.keys(p);
-          const get = k => p[k] || p[cleanKey(k)] || p[k.replace(/\s/g,'')] || "";
+          const map = {};
+          Object.keys(p).forEach(k => { map[clean(k)] = p[k]; });
 
           return {
-            code:     (get("کد پرسنلی") || "").toString().trim(),
-            name:     get("نام و نام خانوادگی") || "",
-            dept:     get("و احد سازمانی") || get("واحد سازمانی") || get("واحد") || "نامشخص",
-            position: get("سمت") || get("سمت شغلی") || "نامشخص",
+            code:     (map["کدپرسنلی"] || map["کد پرسنلی"] || "").toString().trim(),
+            name:     map["نامونامخانوادگی"] || map["نام و نام خانوادگی"] || "",
+            dept:     map["واحدسازمانی"] || map["واحد سازمانی"] || map["و احد سازمانی"] || "نامشخص",
+            position: map["سمت"] || map["سمتشغلی"] || map["سمت شغلی"] || "نامشخص",
             grade:    "C",
             bonus:    Math.floor(Math.random()*10000000) - 3000000
           };
         });
-        alert(`${this.personnel.length} نفر بارگذاری شد!`);
+        alert(`${this.personnel.length} نفر با موفقیت بارگذاری شد!`);
       };
       reader.readAsArrayBuffer(file);
     },
     drawRadar() {
-      const ctx = document.getElementById('radarChart')?.getContext('2d');
+      const ctx = document.getElementById('radarChart');
       if (!ctx) return;
       new Chart(ctx, {
         type: 'radar',
         data: {
-          labels: ['کیفیت','سرعت','همکاری','مسئولیت','نوآوری','انضباط'],
-          datasets: [{ label: 'عملکرد', data: [88,76,92,85,79,90], backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9' }]
+          labels: ['کیفیت کار','سرعت','همکاری','مسئولیت‌پذیری','نوآوری','انضباط'],
+          datasets: [{ label: 'عملکرد شما', data: [88,76,92,85,79,90],
+            backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9', pointBackgroundColor: '#0ea5e9'
+          }]
         },
-        options: { scales: { r: { min:0, max:100 }}}
+        options: { scales: { r: { min:0, max:100 } } }
       });
     },
     startClock() {
