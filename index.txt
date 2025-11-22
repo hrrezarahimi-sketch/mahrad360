@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سامانه مدیریت عملکرد ۳۶۰ درجه | مهراد چاشنی توس</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; background: #f8fafc; }
+        .glass { background: rgba(255,255,255,0.92); backdrop-filter: blur(16px); border: 1px solid rgba(226,232,240,0.8); }
+        .primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+        .card-hover { transition: all 0.4s ease; }
+        .card-hover:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(59,130,246,0.2); }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+<!-- صفحه ورود (ابتدا نشون می‌ده، بعد لاگین داشبورد) -->
+<div id="login-page" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+    <div class="glass rounded-3xl p-12 shadow-2xl max-w-md w-full mx-4">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 primary rounded-2xl flex items-center justify-center text-white font-black text-2xl mx-auto mb-4">ماه‌راد</div>
+            <h1 class="text-3xl font-black text-slate-800">ورود به سامانه</h1>
+            <p class="text-slate-600 mt-2">مدیریت عملکرد ۳۶۰ درجه</p>
+        </div>
+        <form id="login-form">
+            <input type="email" id="email" placeholder="ایمیل (hr.rezarahimi@gmail.com)" class="w-full p-4 border border-slate-300 rounded-2xl mb-4 focus:ring-2 focus:ring-blue-500" required>
+            <input type="password" id="password" placeholder="رمز عبور (Mahrad@1404PMS)" class="w-full p-4 border border-slate-300 rounded-2xl mb-6 focus:ring-2 focus:ring-blue-500" required>
+            <button type="submit" class="w-full primary text-white py-4 rounded-2xl font-bold shadow-xl hover:shadow-blue-500/50 transition">ورود</button>
+        </form>
+        <p class="text-center text-sm text-slate-500 mt-4">پس از ورود، رمز را تغییر دهید.</p>
+    </div>
+</div>
+
+<!-- داشبورد (پس از لاگین) -->
+<div id="dashboard" class="hidden min-h-screen">
+    <!-- هدر ثابت -->
+    <div class="bg-white shadow-xl border-b border-slate-200 fixed top-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-5">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white font-black text-lg">ماه‌راد</div>
+                <div>
+                    <div class="text-2xl font-black text-slate-800">سامانه مدیریت عملکرد ۳۶۰ درجه</div>
+                    <div class="text-sm text-slate-600">مهراد چاشنی توس – سال ۱۴۰۴ به بعد</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <span class="text-sm font-medium text-slate-600">سه‌ماهه دوم ۱۴۰۴</span>
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-full flex items-center justify-center text-white font-bold">عر</div>
+                <span class="font-semibold text-slate-800" id="user-name">کاربر</span>
+                <button id="logout" class="text-slate-600 hover:text-red-600">خروج</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="pt-28 px-6 max-w-7xl mx-auto">
+        <!-- خوش‌آمدگویی -->
+        <div class="glass rounded-3xl p-10 mb-8 card-hover shadow-2xl">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div>
+                    <h1 class="text-4xl font-black text-slate-800 mb-3">سلام، <span id="welcome-name"></span> عزیز</h1>
+                    <p class="text-lg text-slate-600">به سامانه جامع مدیریت عملکرد ۳۶۰ درجه شرکت مهراد چاشنی توس خوش آمدید</p>
+                    <p class="text-sm text-slate-500 mt-2">امروز: چهارشنبه ۲۲ آبان ۱۴۰۴</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-7xl font-black text-transparent bg-clip-text primary inline-block">A+</div>
+                    <p class="text-xl font-bold text-blue-600 mt-3">گرید عملکرد جاری</p>
+                    <p class="text-green-600 font-bold">↑ ۹.۳٪ نسبت به دوره قبل</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- کارت‌های کلیدی -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="glass rounded-2xl p-7 card-hover shadow-xl">
+                <div class="flex justify-between items-start mb-4">
+                    <i class="ti ti-award text-4xl text-blue-600"></i>
+                    <span class="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">عالی</span>
+                </div>
+                <p class="text-4xl font-black text-slate-800">۱۴۴.۲</p>
+                <p class="text-sm text-slate-600">از ۱۵۰ امتیاز</p>
+            </div>
+
+            <div class="glass rounded-2xl p-7 card-hover shadow-xl">
+                <i class="ti ti-wallet text-4xl text-emerald-600 mb-4"></i>
+                <p class="text-4xl font-black text-slate-800">۲۹,۶۰۰,۰۰۰ <span class="text-lg">تومان</span></p>
+                <p class="text-sm text-slate-600">پاداش پیش‌بینی شده (سه‌ماهه)</p>
+            </div>
+
+            <div class="glass rounded-2xl p-7 card-hover shadow-xl">
+                <i class="ti ti-trophy text-4xl text-amber-600 mb-4"></i>
+                <p class="text-4xl font-black text-slate-800">۴</p>
+                <p class="text-sm text-slate-600">رتبه شما در کل شرکت</p>
+            </div>
+
+            <div class="glass rounded-2xl p-7 card-hover shadow-xl">
+                <i class="ti ti-calendar-event text-4xl text-indigo-600 mb-4"></i>
+                <p class="text-4xl font-black text-slate-800">۵</p>
+                <p class="text-sm text-slate-600">روز تا پایان دوره ارزیابی</p>
+            </div>
+        </div>
+
+        <!-- نمودار رادار سه‌بعدی + نوارها -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+            <div class="glass rounded-3xl p-8 card-hover shadow-2xl lg:col-span-2">
+                <h3 class="text-2xl font-bold text-slate-800 mb-6">تحلیل سه‌بعدی عملکرد</h3>
+                <div id="radarChart"></div>
+            </div>
+            <div class="space-y-6">
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <h4 class="font-bold text-slate-800 mb-3">شایستگی‌ها (KSA)</h4>
+                    <div class="text-3xl font-black text-blue-600">۴.۸۱</div>
+                    <div class="w-full bg-slate-200 rounded-full h-4 mt-3"><div class="bg-blue-600 h-4 rounded-full" style="width:96.2%"></div></div>
+                </div>
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <h4 class="font-bold text-slate-800 mb-3">نتایج عینی (O)</h4>
+                    <div class="text-3xl font-black text-green-600">۴.۹۲</div>
+                    <div class="w-full bg-slate-200 rounded-full h-4 mt-3"><div class="bg-green-600 h-4 rounded-full" style="width:98.4%"></div></div>
+                </div>
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <h4 class="font-bold text-slate-800 mb-3">ارزش‌های سازمانی (EVC)</h4>
+                    <div class="text-3xl font-black text-purple-600">۴.۶۵</div>
+                    <div class="w-full bg-slate-200 rounded-full h-4 mt-3"><div class="bg-purple-600 h-4 rounded-full" style="width:93%"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- دسترسی‌های سریع -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="#" class="primary rounded-2xl p-8 text-white text-center card-hover shadow-xl">
+                <i class="ti ti-file-analytics text-6xl mb-4"></i>
+                <h3 class="text-2xl font-bold">کارنامه کامل</h3>
+                <p class="opacity-90 mt-2">شامل بازخورد ۳۶۰ درجه</p>
+            </a>
+            <a href="#" class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-8 text-white text-center card-hover shadow-xl">
+                <i class="ti ti-checkbox text-6xl mb-4"></i>
+                <h3 class="text-2xl font-bold">خودارزیابی</h3>
+                <p class="opacity-90 mt-2">مهلت: ۳۰ آبان ۱۴۰۴</p>
+            </a>
+            <a href="#" class="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-8 text-white text-center card-hover shadow-xl">
+                <i class="ti ti-message-circle text-6xl mb-4"></i>
+                <h3 class="text-2xl font-bold">جلسه بازخورد</h3>
+                <p class="opacity-90 mt-2">زمان پیشنهادی با مدیر واحد</p>
+            </a>
+        </div>
+
+        <!-- بخش آپلود اکسل (برای ادمین) -->
+        <div id="excel-upload" class="glass rounded-3xl p-8 mt-10 hidden">
+            <h3 class="text-2xl font-bold text-slate-800 mb-4">وارد کردن پرسنل با اکسل</h3>
+            <input type="file" id="excel-file" accept=".xlsx" class="w-full p-4 border rounded-2xl">
+            <button id="upload-excel" class="mt-4 primary text-white py-3 px-6 rounded-2xl font-bold">آپلود و وارد کردن ۱۵۰ نفر</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // اتصال به Supabase (با اطلاعات پروژه‌ت)
+    const supabaseUrl = 'https://khuyardazpgmreygchbk.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtodXlhcmRhenBnbXJleWdjaGJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MzMyODIsImV4cCI6MjA3OTMwOTI4Mn0.uxsZ33xdH-OeMxADk_qzigerAS-DNrltlQFDAYVq46g';
+    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+    // ورود
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert('خطا: ' + error.message);
+        else {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('welcome-name').textContent = data.user.email.split('@')[0];
+            document.getElementById('user-name').textContent = data.user.email.split('@')[0];
+            // بارگذاری داده‌ها از Supabase (نمونه)
+            const { data: userData } = await supabase.from('employees').select('*').eq('email', email);
+            if (userData && userData[0].role === 'admin') document.getElementById('excel-upload').classList.remove('hidden');
+        }
+    });
+
+    // خروج
+    document.getElementById('logout').addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        location.reload();
+    });
+
+    // آپلود اکسل (نمونه ساده، با PapaParse برای CSV-like)
+    document.getElementById('upload-excel').addEventListener('click', async () => {
+        const file = document.getElementById('excel-file').files[0];
+        if (!file) return alert('فایل اکسل انتخاب کنید');
+        // در نسخه کامل، از XLSX.js استفاده کن برای خواندن اکسل و insert به Supabase
+        alert('آپلود شد! ۱۵۰ پرسنل وارد شد. (در نسخه کامل، داده‌ها ذخیره می‌شن)');
+    });
+
+    // نمودار
+    var options = {
+        series: [{ name: 'عملکرد جاری', data: [96, 98, 93] }],
+        chart: { height: 380, type: 'radar' },
+        xaxis: { categories: ['شایستگی‌ها (KSA)', 'نتایج عینی (O)', 'ارزش‌های سازمانی (EVC)'] },
+        colors: ['#3b82f6'],
+        fill: { opacity: 0.1 },
+        stroke: { width: 4 },
+        markers: { size: 6 },
+        yaxis: { max: 100, labels: { formatter: v => v + '%' } }
+    };
+    new ApexCharts(document.querySelector("#radarChart"), options).render();
+</script>
+</body>
+</html>
