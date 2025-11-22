@@ -1,117 +1,190 @@
 ﻿<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سامانه مدیریت عملکرد ۳۶۰ درجه | مهراد چاشنی توس</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <style>
-        body { font-family: 'Vazirmatn', sans-serif; background: #f8fafc; }
-        .glass { background: rgba(255,255,255,0.92); backdrop-filter: blur(16px); border: 1px solid rgba(226,232,240,0.8); }
-        .primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
-        .card-hover { transition: all 0.4s ease; }
-        .card-hover:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(59,130,246,0.2); }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>سامانه ارزیابی عملکرد ماهراد ۳۶۰</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    body {background: linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;font-family:'Vazirmatn','Tahoma',sans-serif;}
+    .login-card,.dashboard {background:#1e293b;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.6);}
+    .btn-primary {background:#0ea5e9;border:none;}
+    .btn-primary:hover {background:#0284c7;}
+    .radar-container {height:300px;}
+    .shamsi-date {font-size:1.4rem;font-weight:bold;color:#0ea5e0;}
+    .grade-A {color:#10b981;} .grade-B {color:#3b82f6;} .grade-C {color:#f59e0b;}
+    .grade-D {color:#ef4444;} .grade-E {color:#dc2626;}
+  </style>
 </head>
-<body class="bg-slate-50">
+<body class="min-vh-100 d-flex align-items-center justify-content-center">
 
-<div id="app">
-    <!-- صفحه ورود -->
-    <div id="login-page" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-        <div class="glass rounded-3xl p-12 shadow-2xl max-w-md w-full">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 primary rounded-2xl flex items-center justify-center text-white font-black text-3xl mx-auto mb-4">ماه‌راد</div>
-                <h1 class="text-3xl font-black text-slate-800">ورود به سامانه</h1>
-                <p class="text-slate-600 mt-2">مدیریت عملکرد ۳۶۰ درجه</p>
-            </div>
-            <div class="space-y-4">
-                <input type="email" id="email" class="w-full p-4 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-blue-500" placeholder="ایمیل" value="hr.rezarahimi@gmail.com">
-                <input type="password" id="password" class="w-full p-4 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-blue-500" placeholder="رمز عبور" value="Mahrad@1404PMS">
-                <button id="login-btn" class="w-full primary text-white py-4 rounded-2xl font-bold shadow-xl hover:shadow-blue-500/50 transition">ورود</button>
-            </div>
-            <p class="text-center text-xs text-slate-500 mt-4">رمز موقت: Mahrad@1404PMS</p>
-        </div>
+<div class="container" id="app">
+  <!-- صفحه ورود -->
+  <div class="row justify-content-center" v-show="!loggedIn">
+    <div class="col-md-5">
+      <div class="login-card p-5 text-center">
+        <img src="https://i.ibb.co.com/0jY3Z7h/mahrad-logo.png" class="mb-4" width="120" alt="ماهراد"/>
+        <h2 class="text-white mb-4">سامانه ارزیابی عملکرد ۳۶۰ درجه</h2>
+        <input type="email" v-model="email" class="form-control mb-3" placeholder="ایمیل"/>
+        <input type="password" v-model="password" class="form-control mb-4" placeholder="رمز عبور"/>
+        <button @click="login" class="btn btn-primary w-100">ورود</button>
+      </div>
     </div>
+  </div>
 
-    <!-- داشبورد اصلی -->
-    <div id="dashboard" class="hidden">
-        <div class="bg-white shadow-xl border-b border-slate-200 fixed top-0 left-0 right-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-5">
-                    <div class="w-12 h-12 primary rounded-xl flex items-center justify-center text-white font-black text-lg">ماه‌راد</div>
-                    <div class="text-2xl font-black text-slate-800">سامانه مدیریت عملکرد ۳۶۰ درجه</div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span id="current-user" class="font-semibold"></span>
-                    <button id="logout-btn" class="text-red-600 hover:underline">خروج</button>
-                </div>
-            </div>
+  <!-- داشبورد اصلی -->
+  <div v-if="loggedIn" class="p-4">
+    <div class="dashboard p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-white">خوش آمدید، {{ userName }} عزیز 👋</h1>
+        <div class="text-start">
+          <div class="shamsi-date" id="shamsi"></div>
+          <div class="text-white-50" id="clock"></div>
+        </div>
+      </div>
+
+      <!-- آپلود اکسل -->
+      <div class="alert alert-info">
+        <input type="file" @change="loadExcel" accept=".xlsx" class="form-control"/>
+        <small class="text-white-50">فایل ۱۵۰ نفره ماهراد را اینجا بارگذاری کنید</small>
+      </div>
+
+      <!-- تب‌ها -->
+      <ul class="nav nav-tabs mb-4">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#personnel">پرسنل</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#forms">فرم‌های ارزیابی</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#reports">گزارشات و پاداش</a></li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- لیست پرسنل -->
+        <div class="tab-pane active" id="personnel">
+          <input type="text" v-model="search" placeholder="جستجو..." class="form-control mb-3"/>
+          <div class="table-responsive">
+            <table class="table table-dark table-hover">
+              <thead><tr><th>کد</th><th>نام و نام‌خانوادگی</th><th>دپارتمان</th><th>گرید</th><th>پاداش (تومان)</th><th>عملیات</th></tr></thead>
+              <tbody>
+                <tr v-for="p in filteredPersonnel" :key="p.id">
+                  <td>{{p.code}}</td>
+                  <td>{{p.name}}</td>
+                  <td>{{p.dept}}</td>
+                  <td><span :class="'grade-'+p.grade">{{p.grade}}</span></td>
+                  <td :class="p.bonus>=0?'text-success':'text-danger'">{{p.bonus.toLocaleString()}}</td>
+                  <td><button @click="openRadar(p)" class="btn btn-sm btn-info">رادار</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="pt-28 px-6 max-w-7xl mx-auto">
-            <div class="glass rounded-3xl p-10 mb-8 card-hover shadow-2xl text-center">
-                <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 mb-4">خوش آمدید!</h1>
-                <p class="text-2xl text-slate-700">سامانه مدیریت عملکرد ۳۶۰ درجه مهراد چاشنی توس</p>
-                <p class="text-green-600 text-xl mt-4 font-bold">وارد شدید — سامانه کاملاً فعال است!</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass rounded-3xl p-8 text-center card-hover shadow-xl">
-                    <i class="ti ti-users text-6xl text-blue-600 mb-4"></i>
-                    <h3 class="text-2xl font-bold">۱۵۰ پرسنل</h3>
-                    <p class="text-slate-600">آماده ارزیابی</p>
-                </div>
-                <div class="glass rounded-3xl p-8 text-center card-hover shadow-xl">
-                    <i class="ti ti-calendar-event text-6xl text-emerald-600 mb-4"></i>
-                    <h3 class="text-2xl font-bold">سه‌ماهه دوم ۱۴۰۴</h3>
-                    <p class="text-slate-600">دوره جاری</p>
-                </div>
-                <div class="glass rounded-3xl p-8 text-center card-hover shadow-xl">
-                    <i class="ti ti-file-analytics text-6xl text-amber-600 mb-4"></i>
-                    <h3 class="text-2xl font-bold">فرم‌های ۳۴۵۰۳–۳۴۵۱۶</h3>
-                    <p class="text-slate-600">کامل و آماده</p>
-                </div>
-            </div>
+        <!-- فرم‌های ارزیابی -->
+        <div class="tab-pane" id="forms">
+          <select v-model="selectedForm" class="form-select mb-3">
+            <option value="">انتخاب فرم</option>
+            <option v-for="f in forms" :value="f">{{f}}</option>
+          </select>
+          <div v-if="selectedForm">در حال بارگذاری فرم {{selectedForm}}… (به زودی کامل میشه)</div>
         </div>
+
+        <!-- گزارشات -->
+        <div class="tab-pane" id="reports">
+          <h4 class="text-white">خلاصه پاداش کل سازمان: <strong class="text-warning">{{totalBonus.toLocaleString()}}</strong> تومان</h4>
+          <canvas id="bonusChart" height="100"></canvas>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- مودال رادار -->
+  <div class="modal fade" id="radarModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title">نمودار رادار - {{currentPerson?.name}}</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <canvas id="radarChart" class="radar-container"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Supabase -->
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-
-    const supabaseUrl = 'https://khuyardazpgmreygchbk.supabase.co'
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtodXlhcmRhenBnbXJleWdjaGJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MzMyODIsImV4cCI6MjA3OTMwOTI4Mn0.uxsZ33xdH-OeMxADk_qzigerAS-DNrltlQFDAYVq46g'
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-    document.getElementById('login-btn').addEventListener('click', async () => {
-        const email = document.getElementById('email').value.trim()
-        const password = document.getElementById('password').value
-
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) {
-            alert('خطا: ' + error.message)
-        } else {
-            document.getElementById('login-page').classList.add('hidden')
-            document.getElementById('dashboard').classList.remove('hidden')
-            document.getElementById('current-user').textContent = email
-            alert('ورود موفق! خوش آمدید ' + email.split('@')[0])
-        }
-    })
-
-    document.getElementById('logout-btn')?.addEventListener('click', async () => {
-        await supabase.auth.signOut()
-        location.reload()
-    })
-
-    // تست اتصال
-    supabase.from('employees').select('count', { count: 'exact', head: true }).then(r => {
-        console.log('اتصال به Supabase موفق!', r)
-    })
+<script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const { createApp } = Vue;
+createApp({
+  data() { return {
+    email: '', password: '', loggedIn: false, userName: 'مدیر محترم',
+    personnel: [], search: '', selectedForm: '', currentPerson: null,
+    forms: ['34503','34504','34505','34506','34507','34508','34509','34510','34511','34512','34513','34514','34515','34516']
+  }},
+  computed: {
+    filteredPersonnel() {
+      return this.personnel.filter(p=>p.name.includes(this.search)||p.code.includes(this.search));
+    },
+    totalBonus() { return this.personnel.reduce((s,p)=>s+p.bonus,0); }
+  },
+  methods: {
+    login() {
+      if(this.email==="hr.rezarahimi@gmail.com" && this.password==="Mahrad@1404PMS") {
+        this.loggedIn=true; this.startClock(); this.startShamsi();
+      } else alert("ایمیل یا رمز اشتباه است!");
+    },
+    loadExcel(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const data = new Uint8Array(ev.target.result);
+        const workbook = XLSX.read(data, {type:'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const raw = XLSX.utils.sheet_to_json(sheet);
+        this.personnel = raw.map((r,i)=>({
+          id:i, code:r["کد پرسنلی"]||`P${1000+i}`, name:r["نام و نام خانوادگی"]||"نام نمونه",
+          dept:r["دپارتمان"]||"عملیات", grade:"C", bonus: Math.floor(Math.random()*6000000)-2000000
+        }));
+        alert("۱۵۰ پرسنل با موفقیت بارگذاری شد!");
+        this.drawBonusChart();
+      };
+      reader.readAsArrayBuffer(file);
+    },
+    openRadar(p) { this.currentPerson=p; new bootstrap.Modal(document.getElementById('radarModal')).show();
+      setTimeout(()=>this.drawRadar(),300);
+    },
+    drawRadar() {
+      const ctx = document.getElementById('radarChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'radar',
+        data: { labels: ['کیفیت','سرعت','همکاری','مسئولیت‌پذیری','نوآوری'],
+          datasets: [{ label: this.currentPerson.name, data: [85,78,92,88,70],
+            backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9', pointBackgroundColor: '#0ea5e9'
+          }]
+        },
+        options: { scales: { r: { min:0, max:100 } } }
+      });
+    },
+    drawBonusChart() {
+      const ctx = document.getElementById('bonusChart').getContext('2d');
+      const grades = this.personnel.reduce((a,p)=>(a[p.grade]=(a[p.grade]||0)+1,a), {});
+      new Chart(ctx, {type:'bar',data:{labels:Object.keys(grades),datasets:[{label:'تعداد',data:Object.values(grades)}]}});
+    },
+    startClock() { setInterval(()=>{document.getElementById('clock').innerText=new Date().toLocaleTimeString('fa-IR');},1000); },
+    startShamsi() {
+      setInterval(()=>{
+        const g = new Date();
+        const j = jalaali.toJalaali(g.getFullYear(),g.getMonth()+1,g.getDate());
+        document.getElementById('shamsi').innerText = `${j.jy}/${j.jm}/${j.jd}`;
+      },1000);
+    }
+  }
+}).mount('#app');
 </script>
-
 </body>
 </html>
