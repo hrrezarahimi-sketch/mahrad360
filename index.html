@@ -14,76 +14,85 @@
     .card {background:#1e293b;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.7);}
     .btn-primary {background:#0ea5e9;border:none;}
     .shamsi-date {font-size:1.6rem;font-weight:bold;color:#0ea5e9;}
-    .grade-A {color:#10b981;} .grade-B {color:#3b82f6;} .grade-C {color:#f59e0b;}
-    .grade-D {color:#ef4444;} .grade-E {color:#dc2626;}
+    .grade-A{color:#10b981}.grade-B{color:#3b82f6}.grade-C{color:#f59e0b}.grade-D{color:#ef4444}.grade-E{color:#dc2626}
   </style>
 </head>
 <body class="min-vh-100 d-flex align-items-center justify-content-center">
 
 <div class="container" id="app">
-  <!-- ورود با کد پرسنلی -->
-  <div v-if="!loggedIn" class="row justify-content-center">
+  <!-- صفحه ورود -->
+  ورود -->
+  <div v-if="!loggedIn" class="row justify-content-center mt-5">
     <div class="col-md-4">
       <div class="card p-5 text-center">
-        <img src="https://i.ibb.co.com/0jY3Z7h/mahrad-logo.png" width="120" class="mb-4">
+        <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="120" class="mb-4">
         <h3 class="text-white mb-4">سامانه ارزیابی عملکرد ۳۶۰ درجه ماهراد</h3>
-        <input type="text" v-model="loginCode" class="form-control mb-3" placeholder="کد پرسنلی خود را وارد کنید">
+        <input type="text" v-model="loginCode" class="form-control mb-3" placeholder="کد پرسنلی" autofocus>
         <button @click="login" class="btn btn-primary w-100">ورود به سامانه</button>
-        <small class="text-white-50 mt-3 d-block">مدیر: کد admin</small>
+        <small class="text-white-50 mt-3 d-block">مدیر سیستم: admin</small>
       </div>
     </div>
+  >
   </div>
 
-  <!-- داشبورد اصلی -->
+  <!-- داشبورد -->
   <div v-else class="p-4">
     <div class="card p-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 class="text-white">خوش آمدید، {{ currentUser["نام و نام خانوادگی"] }} عزیز</h2>
-          <p class="text-white-50">واحد: {{ currentUser["واحد"] }} | سمت: {{ currentUser["سمت"] }}</p>
+          <h2 class="text-white">خوش آمدید، {{ currentUser["نام و نام خانوادگی"] || "مدیر" }} عزیز</h2>
+          <p class="text-white-50">واحد: {{ currentUser["واحد"] || "-" }} | سمت: {{ currentUser["سمت"] || "-" }}</p>
         </div>
         <div class="text-start">
-          <div class="shamsi-date" id="shamsi"></div>
-          <div id="clock" class="text-white-50 fs-4"></div>
+          <div class="shamsi-date" id="shamsi">1404/09/01</div>
+          <div id="clock" class="text-white-50 fs-4">00:00:00</div>
         </div>
       </div>
 
       <ul class="nav nav-tabs mb-4">
         <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#home">داشبورد شخصی</a></li>
-        <li class="nav-item" v-if="isAdmin"><a class="nav-link" data-bs-toggle="tab" href="#personnel">لیست پرسنل</a></li>
+        <li class="nav-item" v-if="isAdmin"><a class="nav-link" data-bs-toggle="tab" href="#all">لیست کامل پرسنل</a></li>
         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#form">فرم ارزیابی</a></li>
       </ul>
 
       <div class="tab-content">
+        <!-- داشبورد شخصی -->
         <div class="tab-pane active" id="home">
-          <div class,col-12>
-            <h4 class="text-info">وضعیت عملکرد شما</h4>
-            <p>گرید فعلی: <strong :class="'grade-'+currentUser.grade">{{ currentUser.grade }}</strong></p>
-            <p>پاداش/کسور ماه جاری: <strong :class="currentUser.bonus>=0?'text-success':'text-danger'">{{ Number(currentUser.bonus).toLocaleString() }} تومان</strong></p>
-            <canvas id="radarChart" height="300"></canvas>
+          <div class="row text-center">
+            <div class="col-12">
+              <h4 class="text-info mb-3">وضعیت عملکرد شما</h4>
+              <p>گرید فعلی: <strong :class="'grade-'+currentUser.grade">{{ currentUser.grade || "C" }}</strong></p>
+              <p>پاداش/کسور: <strong :class="currentUser.bonus>=0?'text-success':'text-danger'">{{ (currentUser.bonus||0).toLocaleString() }} تومان</strong></p>
+              <canvas id="radarChart" height="320"></canvas>
+            </div>
           </div>
         </div>
 
-        <div class="tab-pane" id="personnel" v-if="isAdmin">
-          <input type="file" @change="loadExcel" accept=".xlsx" class="form-control mb-3">
-          <input type="text" v-model="search" placeholder="جستجو..." class="form-control mb-3">
-          <table class="table table-dark table-hover">
-            <thead><tr><th>کد</th><th>نام</th><th>واحد</th><th>گرید</th><th>پاداش</th></tr></thead>
-            <tbody>
-              <tr v-for="p in filteredPersonnel">
-                <td>{{ p["کد پرسنلی"] }}</td>
-                <td>{{ p["نام و نام خانوادگی"] }}</td>
-                <td>{{ p["واحد"] }}</td>
-                <td><span :class="'grade-'+p.grade">{{ p.grade }}</span></td>
-                <td :class="p.bonus>=0?'text-success':'text-danger'">{{ Number(p.bonus).toLocaleString() }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- لیست پرسنل (فقط مدیر) -->
+        <div class="tab-pane" id="all" v-if="isAdmin">
+          <input type="file" @change="loadExcel" accept=".xlsx,.xls" class="form-control mb-3">
+          <input type="text" v-model="search" placeholder="جستجو نام یا کد..." class="form-control mb- mb-3">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover text-center">
+              <thead><tr><th>کد</th><th>نام و نام خانوادگی</th><th>واحد</th><th>سمت</th><th>گرید</th><th>پاداش</th></tr></thead>
+              <tbody>
+                <tr v-for="p in filtered" :key="p['کد پرسنلی']">
+                  <td>{{ p["کد پرسنلی"] }}</td>
+                  <td>{{ p["نام و نام خانوادگی"] }}</td>
+                  <td>{{ p["واحد"] }}</td>
+                  <td>{{ p["سمت"] }}</td>
+                  <td><span :class="'grade-'+p.grade">{{ p.grade }}</span></td>
+                  <td :class="p.bonus>=0?'text-success':'text-danger'">{{ Number(p.bonus).toLocaleString() }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
+        <!-- فرم ارزیابی -->
         <div class="tab-pane" id="form">
-          <h4 class="text-white">فرم ارزیابی عملکرد - {{ currentUser["نام و نام خانوادگی"] }}</h4>
-          <p class="text-info">به زودی فرم کامل با ۵۰+ فیلد برای شما فعال می‌شود!</p>
+          <h4 class="text-white">فرم ارزیابی عملکرد - کد پرسنلی {{ currentUser["کد پرسنلی"] }}</h4>
+          <p class="text-info">فرم‌های ۳۴۵۰۳ تا ۳۴۵۱۶ به زودی فعال می‌شوند.</p>
         </div>
       </div>
     </div>
@@ -92,63 +101,79 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const app = Vue.createApp({
+Vue.createApp({
   data() { return {
     loginCode: '', loggedIn: false, currentUser: {}, personnel: [], search: '', isAdmin: false
   }},
   computed: {
-    filteredPersonnel() {
+    filtered() {
+      if (!this.search) return this.personnel;
       return this.personnel.filter(p => 
-        p["نام و نام خانوادگی"]?.includes(this.search) || 
-        p["کد پرسنلی"]?.includes(this.search)
+        (p["نام و نام خانوادگی"]||"").includes(this.search) || 
+        (p["کد پرسنلی"]||"").includes(this.search)
       );
     }
   },
   methods: {
     login() {
       if (this.loginCode === "admin") {
-        this.isAdmin = true; this.currentUser = { "نام و نام خانوادگی": "مدیر محترم", grade: "A", bonus: 50000000 };
-        this.loggedIn = true; this.startClock();
+        this.isAdmin = true;
+        this.currentUser = { "نام و نام خانوادگی": "مدیر سیستم", grade: "A", bonus: 0 };
+        this.loggedIn = true;
+        this.startClock();
         return;
       }
-      const user = this.personnel.find(p => p["کد پرسنلی"] == this.loginCode);
-      if (user) { this.currentUser = user; this.loggedIn = true; this.startClock(); this.drawRadar(); }
-      else alert("کد پرسنلی اشتباه است!");
+      const user = this.personnel.find(p => String(p["کد پرسنلی"]) === String(this.loginCode));
+      if (user) {
+        this.currentUser = user;
+        this.loggedIn = true;
+        this.startClock();
+        this.$nextTick(() => this.drawRadar());
+      } else {
+        alert("کد پرسنلی یافت نشد. ابتدا مدیر اکسل را بارگذاری کند.");
+      }
     },
     loadExcel(e) {
       if (!this.isAdmin) return;
       const file = e.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = (ev) => {
         const data = new Uint8Array(ev.target.result);
         const wb = XLSX.read(data, {type:'array'});
         this.personnel = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         this.personnel.forEach(p => {
-          p.grade = "C"; // بعداً خودکار محاسبه میشه
-          p.bonus = Math.floor(Math.random()*8000000) - 2000000;
+          p.grade = p.grade || "C";
+          p.bonus = p.bonus || Math.floor(Math.random()*8000000)-2000000;
         });
-        alert(`${this.personnel.length} نفر بارگذاری شد!`);
+        alert(`${this.personnel.length} نفر با موفقیت بارگذاری شد!`);
       };
       reader.readAsArrayBuffer(file);
     },
     drawRadar() {
-      setTimeout(() => {
-        const ctx = document.getElementById('radarChart')?.getContext('2d');
-        if (!ctx) return;
-        new Chart(ctx, { type: 'radar', data: {
-          labels: ['کیفیت','سرعت','همکاری','مسئولیت‌پذیری','نوآوری','انضباط'],
-          datasets: [{ label: 'عملکرد شما', data: [88, 76, 92, 85, 79, 90],
-            backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9'
+      const ctx = document.getElementById('radarChart');
+      if (!ctx) return;
+      new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['کیفیت کار','سرعت','همکاری تیمی','مسئولیت‌پذیری','نوآوری','انضباط'],
+          datasets: [{
+            label: 'عملکرد شما',
+            data: [88,76,92,85,79,90],
+            backgroundColor: 'rgba(14,165,233,0.2)',
+            borderColor: '#0ea5e9',
+            pointBackgroundColor: '#0ea5e9'
           }]
-        }});
-      }, 500);
+        },
+        options: { scales: { r: { min:0, max:100 } } }
+      });
     },
     startClock() {
       setInterval(() => {
-        const g = new Date();
-        const j = jalaali.toJalaali(g.getFullYear(), g.getMonth()+1, g.getDate());
-        document.getElementById('shamsi').innerText = `${j.jy}/${j.jm}/${j.jd}`;
-        document.getElementById('clock').innerText = g.toLocaleTimeString('fa-IR');
+        const d = new Date();
+        const j = jalaali.toJalaali(d.getFullYear(), d.getMonth()+1, d.getDate());
+        document.getElementById('shamsi').innerText = `${j.jy}/${j.jm.toString().padStart(2,'0')}/${j.jd.toString().padStart(2,'0')}`;
+        document.getElementById('clock').innerText = d.toLocaleTimeString('fa-IR');
       }, 1000);
     }
   }
