@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ماهراد ۳۶۰ - ۱۴۰۵</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+  <title>ماهراد ۳۶۰ - سامانه ارزیابی عملکرد</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
@@ -12,100 +12,151 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
   <style>
-    body{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:'Vazirmatn',sans-serif;min-height:100vh}
-    .glass{background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);border-radius:25px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 20px 50px rgba(0,0,0,0.3)}
-    .card{background:rgba(255,255,255,0.15);backdrop-filter:blur(15px);border-radius:20px;border:none;transition:.3s}
-    .card:hover{transform:translateY(-8px)}
-    .grade-circle{width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:4.5rem;font-weight:900;box-shadow:0 0 40px}
-    .A{background:#10b981;box-shadow:0 0 40px #10b98180}
-    .B{background:#3b82f6;box-shadow:0 0 40px #3b82f680}
-    .C{background:#fbbf24;box-shadow:0 0 40px #fbbf2480}
-    .D{background:#f97316;box-shadow:0 0 40px #f9731680}
-    .E{background:#ef4444;box-shadow:0 0 40px #ef444480}
-    .progress-ring{position:relative;width:160px;height:160px}
+    body{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-family:'Vazirmatn',sans-serif;min-height:100vh}
+    .glass{background:rgba(255,255,255,0.12);backdrop-filter:blur(20px);border-radius:20px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 15px 35px rgba(0,0,0,0.3)}
+    .card{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border-radius:18px;border:none}
+    .card:hover{transform:translateY(-10px);transition:.4s}
+    .grade-circle{width:150px;height:150px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:5rem;font-weight:900;box-shadow:0 0 50px}
+    .A{background:#10b981;box-shadow:0 0 50px #10b98190}
+    .B{background:#3b82f6;box-shadow:0 0 50px #3b82f690}
+    .C{background:#fbbf24;box-shadow:0 0 50px #fbbf2490}
+    .D{background:#f97316;box-shadow:0 0 50px #f9731690}
+    .E{background:#ef4444;box-shadow:0 0 50px #ef444490}
+    .shamsi{font-size:3rem;font-weight:900;background:linear-gradient(45deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .dept-header{background:rgba(255,255,255,0.15);border-radius:12px;padding:15px;margin-bottom:15px;cursor:pointer}
+    .progress-ring{position:relative;width:170px;height:170px}
     .progress-ring svg{transform:rotate(-90deg)}
-    .progress-ring circle{fill:none;stroke:#334155;stroke-width:14}
-    .progress-ring .bar{stroke:#10b981;stroke-linecap:round;stroke-width:14;transition:.8s}
-    .progress-ring .text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.2rem;font-weight:900}
-    .shamsi{font-size:2.8rem;font-weight:900;background:linear-gradient(45deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .radar-canvas{background:rgba(255,255,255,0.1);border-radius:20px;padding:20px}
+    .progress-ring circle{fill:none;stroke:#334155;stroke-width:15}
+    .progress-ring .bar{stroke:#10b981;stroke-linecap:round;stroke-width:15;transition:.8s}
+    .progress-ring .text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.5rem;font-weight:900}
   </style>
 </head>
-<body class="p-3">
+<body class="p-4">
 
 <div id="app" class="container py-4">
+  <!-- ورود -->
   <div v-if="!user" class="d-flex align-items-center justify-content-center min-vh-100">
-    <div class="glass p-5 text-center" style="max-width:420px">
-      <h1 class="display-4 fw-bold mb-4">ماهراد ۳۶۰</h1>
-      <input v-model="code" @keyup.enter="login" class="form-control form-control-lg text-center mb-4 fs-3" placeholder="کد پرسنلی" autofocus>
-      <button @click="login" class="btn btn-light btn-lg w-100 fs-4">ورود</button>
-      <small class="d-block mt-3">مدیر: admin</small>
+    <div class="glass p-5 text-center" style="max-width:450px">
+      <h1 class="display-3 fw-bold mb-4">ماهراد ۳۶۰</h1>
+      <input v-model="code" @keyup.enter="login" class="form-control form-control-lg text-center mb-4 fs-2" placeholder="کد پرسنلی" autofocus>
+      <button @click="login" class="btn btn-light btn-lg w-100 fs-3">ورود</button>
+      <small class="d-block mt-4 text-warning">مدیر → کد: admin</small>
     </div>
   </div>
 
-  <div v-else class="glass p-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-      <div><h1 class="shamsi">{{shamsiDate}}</h1><h3>سامانه مدیریت عملکرد کارکنان</h3></div>
-      <button @click="user=null" class="btn btn-outline-light">خروج</button>
-    </div>
-
-    <div class="row g-4 mb-5 text-center">
-      <div class="col-md-3"><div class="card p-4"><h5>تکمیل ارزیابی</h5>
-        <div class="progress-ring mx-auto"><svg width="160" height="160"><circle cx="80" cy="80" r="72"/><circle cx="80" cy="80" r="72" class="bar" :stroke-dasharray="c" :stroke-dashoffset="o"/></svg><div class="text">{{percent}}%</div></div>
-      </div></div>
-      <div class="col-md-3"><div class="card p-4"><h5>پاداش سه‌ماهه</h5><h2 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h2></div></div>
-      <div class="col-md-3"><div class="card p-4"><h5>گرید عملکرد</h5><div class="grade-circle mx-auto" :class="grade">{{grade}}</div></div></div>
-      <div class="col-md-3"><div class="card p-4"><h5>امتیاز کل</h5><h2>{{avg.toFixed(2)}} / ۵.۰۰</h2></div></div>
-    </div>
-
-    <div class="row">
-      <div class="col-lg-8"><div class="card p-4 radar-canvas"><h4 class="text-center mb-4">نمودار عملکرد ۳۶۰ درجه</h4>
-        <canvas ref="radar" height="420"></canvas>
-        <div class="text-center mt-3"><span class="badge bg-primary fs-6">عملکرد فعلی</span> <span class="badge bg-danger fs-6">هدف</span></div>
-      </div></div>
-      <div class="col-lg-4"><div class="card p-4"><h5>اهداف دوره جاری</h5>
-        <ul class="list-group list-group-flush text-white">
-          <li class="list-group-item bg-transparent d-flex justify-content-between">افزایش فروش ۱۵٪ <span class="text-success">در جریان</span></li>
-          <li class="list-group-item bg-transparent d-flex justify-content-between">کاهش زمان پاسخگویی <span class="text-success">تکمیل شده</span></li>
-          <li class="list-group-item bg-transparent d-flex justify-content-between">دوره مدیریت پروژه <span class="text-warning">در حال انجام</span></li>
-        </ul>
-      </div></div>
-    </div>
-
-    <ul class="nav nav-tabs mt-5 mb-4">
-      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#eval">ارزیابی ۳۶۰</a></li>
-      <li v-if="isAdmin" class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#admin">مدیریت</a></li>
-    </ul>
-
-    <div class="tab-content">
-      <div class="tab-pane active" id="eval" class="card p-4">
-        <select v-model="target" class="form-select form-select-lg mb-4">
-          <option value="">انتخاب همکار برای ارزیابی</option>
-          <option v-for="p in people" :value="p">{{p.name}} - {{p.dept}}</option>
-        </select>
-        <div v-if="target" class="row g-3">
-          <div class="col-md-6" v-for="(q,i) in questions" :key="i">
-            <label class="form-label">{{q}}</label>
-            <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e => e.target.style.background = `linear-gradient(to right, #ef4444 ${(scores[i]-1)*25}%, #10b981 ${(scores[i]-1)*25}%)`">
-            <div class="d-flex justify-content-between"><small>ضعیف</small><strong>{{scores[i]}}</strong><small>عالی</small></div>
-          </div>
+  <!-- داشبورد اصلی -->
+  <div v-else>
+    <div class="glass p-5 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="shamsi">{{shamsiDate}}</h1>
+          <h2>سامانه ارزیابی عملکرد ۳۶۰ درجه</h2>
         </div>
-        <button v-if="target" @click="submit" class="btn btn-success btn-lg w-100 mt-4">ارسال ارزیابی</button>
+        <button @click="user=null" class="btn btn-outline-light btn-lg">خروج</button>
       </div>
 
-      <div v-if="isAdmin" class="tab-pane" id="admin">
-        <button @click="exportExcel" class="btn btn-light mb-3">دانلود گزارش اکسل</button>
-        <input type="file" @change="importExcel" accept=".xlsx" class="form-control mb-3">
-        <div class="table-responsive">
-          <table class="table table-dark text-center">
-            <thead><tr><th>نام</th><th>واحد</th><th>تعداد ارزیابی</th><th>میانگین</th><th>گرید</th></tr></thead>
-            <tbody>
-              <tr v-for="p in people">
-                <td>{{p.name}}</td><td>{{p.dept}}</td><td>{{p.evals?.length||0}}</td><td>{{calcAvg(p).toFixed(2)}}</td>
-                <td><div class="grade-circle mx-auto" :class="calcGrade(calcAvg(p))" style="width:60px;height:60px;font-size:2rem">{{calcGrade(calcAvg(p))}}</div></td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- داشبورد مدیر -->
+      <div v-if="isAdmin" class="row g-4 mb-5">
+        <div class="col-12">
+          <div class="card p-4 text-center">
+            <h3 class="mb-4">آپلود لیست پرسنل (اکسل)</h3>
+            <input type="file" @change="importExcel" accept=".xlsx" class="form-control form-control-lg">
+            <small class="text-warning mt-2 d-block">ستون‌ها: کد، نام، واحد، سمت</small>
+          </div>
+        </div>
+        <div class="col-lg-3" v-for="(dept, i) in departments" :key="i">
+          <div class="card p-4 text-center">
+            <h4>{{dept.name}}</h4>
+            <h2 class="text-primary">{{dept.count}} نفر</h2>
+            <div class="progress mt-3" style="height:25px">
+              <div class="progress-bar bg-success" :style="{width: dept.avg+'%'}">{{Math.round(dept.avg)}}%</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3">
+          <div class="card p-4 text-center">
+            <h4>کل شرکت</h4>
+            <h2 class="text-warning">{{people.length}} نفر</h2>
+            <button @click="exportExcel" class="btn btn-light mt-3">دانلود گزارش کامل</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- داشبورد پرسنل -->
+      <div v-else class="row g-4 text-center mb-5">
+        <div class="col-md-3">
+          <div class="card p-4">
+            <h5>تکمیل ارزیابی</h5>
+            <div class="progress-ring mx-auto">
+              <svg width="170" height="170"><circle cx="85" cy="85" r="77"/><circle cx="85" cy="85" r="77" class="bar" :stroke-dasharray="c" :stroke-dashoffset="o"/></svg>
+              <div class="text">{{percent}}%</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-4">
+            <h5>پاداش سه‌ماهه</h5>
+            <h1 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h1>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-4">
+            <h5>گرید عملکرد</h5>
+            <div class="grade-circle mx-auto" :class="grade">{{grade}}</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-4">
+            <h5>امتیاز کل</h5>
+            <h1>{{avg.toFixed(2)}}</h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- نمودار رادار -->
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card p-4">
+            <h3 class="text-center mb-4">{{isAdmin?'نمودار کلی شرکت':'نمودار عملکرد من'}}</h3>
+            <canvas ref="radar" height="400"></canvas>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div v-if="!isAdmin" class="card p-4">
+            <h4>واحد: {{user.dept}}</h4>
+            <h5>نام: {{user.name}}</h5>
+            <h5>سمت: {{user.position}}</h5>
+          </div>
+          <div v-if="isAdmin" class="card p-4">
+            <h4>لیست دپارتمان‌ها</h4>
+            <div v-for="(d,i) in departments" :key="i" class="dept-header mb-2" @click="d.show=!d.show">
+              <strong>{{d.name}} ({{d.count}} نفر)</strong>
+              <div v-if="d.show" class="mt-2 text-start">
+                <div v-for="p in d.people" :key="p.code" class="small">{{p.name}} - {{p.position||'نامشخص'}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- تب ارزیابی -->
+      <ul class="nav nav-tabs mt-5 mb-4">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active" id="eval" class="card p-4">
+          <select v-model="target" class="form-select form-select-lg mb-4">
+            <option value="">انتخاب همکار</option>
+            <option v-for="p in people" :value="p" v-if="p.code!==user.code">{{p.name}} - {{p.dept}}</option>
+          </select>
+          <div v-if="target" class="row g-3">
+            <div class="col-md-6" v-for="(q,i) in questions" :key="i">
+              <label class="form-label fw-bold">{{q}}</label>
+              <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(scores[i]-1)*25}%,#10b981 ${(scores[i]-1)*25}%)`">
+              <div class="d-flex justify-content-between"><small>ضعیف</small><strong class="fs-4">{{scores[i]}}</strong><small>عالی</small></div>
+            </div>
+          </div>
+          <button v-if="target" @click="submit" class="btn btn-success btn-lg w-100 mt-4">ارسال ارزیابی</button>
         </div>
       </div>
     </div>
@@ -113,105 +164,77 @@
 </div>
 
 <script>
-const {createApp, ref, onMounted, computed} = Vue;
-let chart = null;
-
+const {createApp,ref,onMounted,computed}=Vue; let chart=null;
 createApp({
-  setup() {
-    const code = ref(''), user = ref(null), people = ref([]), target = ref(null), scores = ref(Array(21).fill(3)), radar = ref(null), shamsiDate = ref('');
-    const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"];
+  setup(){
+    const code=ref(''),user=ref(null),people=ref([]),target=ref(null),scores=ref(Array(21).fill(3)),radar=ref(null),shamsiDate=ref('');
+    const questions=["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"];
 
-    const load = () => {
-      const d = localStorage.getItem('mahrad360');
-      if (d) people.value = JSON.parse(d);
-      else {
-        people.value = [{code:"1001",name:"سیاوش قوچانی",dept:"فنی",evals:[]},{code:"1004",name:"محمدرضا شفیعی",dept:"فنی",evals:[]}];
-        save();
-      }
-    };
-    const save = () => localStorage.setItem('mahrad360', JSON.stringify(people.value));
+    const load=()=>{const d=localStorage.getItem('mahrad360_final');if(d)people.value=JSON.parse(d);else people.value=[];}
+    const save=()=>localStorage.setItem('mahrad360_final',JSON.stringify(people.value));
 
-    const login = () => {
-      if (code.value === 'admin') { user.value = {code:'admin',name:'مدیر'}; return; }
-      const p = people.value.find(x => x.code === code.value);
-      if (p) { user.value = p; draw(); } else alert('کد اشتباه');
-    };
-
-    const submit = () => {
-      target.value.evals = target.value.evals || [];
-      target.value.evals.push({from: user.value.code, scores: [...scores.value]});
-      save();
-      alert('ثبت شد');
-      target.value = null;
-      scores.value = Array(21).fill(3);
-      if (user.value.code !== 'admin') draw();
-    };
-
-    const calcAvg = p => p.evals?.length ? p.evals.reduce((a,e) => a + e.scores.reduce((x,y) => x + y, 0), 0) / (p.evals.length * 21) : 0;
-    const calcGrade = a => a >= 4.5 ? 'A' : a >= 4 ? 'B' : a >= 3.5 ? 'C' : a >= 3 ? 'D' : 'E';
-
-    const avg = computed(() => user.value?.code === 'admin' ? 0 : calcAvg(user.value));
-    const grade = computed(() => calcGrade(avg.value));
-    const percent = computed(() => Math.round((avg.value / 5) * 100));
-    const bonus = computed(() => {
-      let b = avg.value * 1500000;
-      return grade.value === 'D' ? b * 0.8 : grade.value === 'E' ? b * 0.5 : b;
-    });
-    const c = 452, o = computed(() => 452 - (452 * percent.value / 100));
-
-    const draw = () => {
-      if (chart) chart.destroy();
-      const data = user.value?.evals?.length
-        ? user.value.evals.reduce((a,e) => e.scores.map((s,i) => a[i] = (a[i] || 0) + s, a), Array(21).fill(0)).map(v => v / user.value.evals.length)
-        : Array(21).fill(3);
-
-      chart = new Chart(radar.value, {
-        type: 'radar',
-        data: {
-          labels: questions,
-          datasets: [
-            { label: 'عملکرد فعلی', data, backgroundColor: 'rgba(99,102,241,0.25)', borderColor: '#6366f1', pointBackgroundColor: '#6366f1', borderWidth: 4 },
-            { label: 'هدف', data: Array(21).fill(5), backgroundColor: 'rgba(239,68,68,0.15)', borderColor: '#ef4444', borderWidth: 3, borderDash: [8,8] }
-          ]
-        },
-        options: {
-          scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.2)' }, pointLabels: { color: '#fff', font: { size: 13 } } } },
-          plugins: { legend: { labels: { color: '#fff' } } }
-        }
+    const departments=computed(()=>{
+      const deps={}, list=[];
+      people.value.forEach(p=>{if(!deps[p.dept]){deps[p.dept]={name:p.dept,count:0,people:[],avg:0,show:false}} deps[p.dept].count++; deps[p.dept].people.push(p);});
+      Object.values(deps).forEach(d=>{
+        const sum=d.people.reduce((a,p)=>a+(p.evals?.length?calcAvg(p):0),0);
+        d.avg=d.count?d.people.length>0?sum/d.people.length:0:0;
+        list.push(d);
       });
-    };
-
-    const exportExcel = () => {
-      const ws = XLSX.utils.json_to_sheet(people.value.map(p => ({نام: p.name, واحد: p.dept, تعداد: p.evals?.length||0, میانگین: calcAvg(p).toFixed(2), گرید: calcGrade(calcAvg(p))})));
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "گزارش");
-      XLSX.writeFile(wb, "Mahrad360.xlsx");
-    };
-
-    const importExcel = e => {
-      const f = e.target.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = a => {
-        const wb = XLSX.read(a.target.result);
-        const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        people.value = data.map(x => ({ code: String(x.کد || ''), name: x.نام, dept: x.واحد, evals: [] }));
-        save();
-        alert('پرسنل با موفقیت وارد شد!');
-      };
-      r.readAsArrayBuffer(f);
-    };
-
-    onMounted(() => {
-      load();
-      setInterval(() => {
-        const d = new Date();
-        const j = jalaali.toJalaali(d.getFullYear(), d.getMonth()+1, d.getDate());
-        shamsiDate.value = `${j.jy}/${j.jm.toString().padStart(2,'0')}/${j.jd.toString().padStart(2,'0')}`;
-      }, 1000);
+      return list;
     });
 
-    return { code, user, people, target, scores, questions, radar, shamsiDate, login, submit, avg, grade, percent, bonus, c, o, draw, exportExcel, importExcel, isAdmin: computed(() => user.value?.code === 'admin'), calcAvg, calcGrade };
+    const login=()=>{
+      if(code.value==='admin'){user.value={code:'admin',name:'مدیر سیستم'};draw();return;}
+      const p=people.value.find(x=>x.code===code.value);
+      if(p){user.value=p;draw();}else alert('کد پرسنلی اشتباه است');
+    };
+
+    const submit=()=>{target.value.evals=target.value.evals||[];target.value.evals.push({from:user.value.code,scores:[...scores.value]});save();alert('ارزیابی ثبت شد');target.value=null;scores.value=Array(21).fill(3);draw();};
+
+    const calcAvg=p=>p.evals?.length?p.evals.reduce((a,e)=>a+e.scores.reduce((x,y)=>x+y,0),0)/(p.evals.length*21):0;
+    const calcGrade=a=>a>=4.5?'A':a>=4?'B':a>=3.5?'C':a>=3?'D':'E';
+
+    const avg=computed(()=>user.value?.code==='admin'?0:calcAvg(user.value));
+    const grade=computed(()=>calcGrade(avg.value));
+    const percent=computed(()=>Math.round((avg.value/5)*100));
+    const bonus=computed(()=>{let b=avg.value*1800000;return grade.value==='D'?b*0.8:grade.value==='E'?b*0.5:b;});
+    const c=502,o=computed(()=>502-(502*percent.value/100));
+
+    const draw=()=>{
+      if(chart)chart.destroy();
+      let data=[];
+      if(user.value?.code==='admin'){
+        departments.value.forEach(d=>data.push(d.avg||0));
+        var labels=departments.value.map(d=>d.name);
+      }else{
+        data=user.value?.evals?.length?user.value.evals.reduce((a,e)=>e.scores.map((s,i)=>a[i]=(a[i]||0)+s,a),Array(21).fill(0)).map(v=>v/user.value.evals.length):Array(21).fill(3);
+        var labels=questions;
+      }
+      chart=new Chart(radar.value,{type:'radar',data:{labels,datasets:[
+        {label:user.value?.code==='admin'?'میانگین دپارتمان':'عملکرد من',data,backgroundColor:'rgba(99,102,241,0.3)',borderColor:'#6366f1',borderWidth:4},
+        {label:'هدف',data:user.value?.code==='admin'?Array(departments.value.length).fill(5):Array(21).fill(5),borderColor:'#ef4444',borderWidth:3,borderDash:[10,5],backgroundColor:'rgba(239,68,68,0.1)'}
+      ]},options:{scales:{r:{min:0,max:5,ticks:{stepSize:1},grid:{color:'rgba(255,255,255,0.2)'},pointLabels:{color:'#fff',font:{size:14}}}}}});
+    };
+
+    const importExcel=e=>{
+      const f=e.target.files[0];if(!f)return;
+      const r=new FileReader();r.onload=a=>{
+        const wb=XLSX.read(a.target.result);
+        const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        people.value=data.map(x=>({code:String(x.کد),name:x.نام,dept:x.واحد,position:x.سمت||'',evals:[]}));
+        save();alert(`${people.value.length} نفر با موفقیت وارد شد!`);draw();
+      };r.readAsArrayBuffer(f);
+    };
+
+    const exportExcel=()=>{
+      const ws=XLSX.utils.json_to_sheet(people.value.map(p=>({کد:p.code,نام:p.name,واحد:p.dept,سمت:p.position,تعداد_ارزیابی:p.evals?.length||0,میانگین:calcAvg(p).toFixed(2),گرید:calcGrade(calcAvg(p))})));
+      const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"گزارش کامل");XLSX.writeFile(wb,"Mahrad360_Complete.xlsx");
+    };
+
+    onMounted(()=>{load();setInterval(()=>{const d=new Date();const j=jalaali.toJalaali(d.getFullYear(),d.getMonth()+1,d.getDate());shamsiDate.value=`${j.jy}/${j.jm.toString().padStart(2,'0')}/${j.jd.toString().padStart(2,'0')}`;},1000);});
+
+    return {code,user,people,target,scores,questions,radar,shamsiDate,login,submit,avg,grade,percent,bonus,c,o,draw,importExcel,exportExcel,isAdmin:computed(()=>user.value?.code==='admin'),departments};
   }
 }).mount('#app');
 </script>
