@@ -29,7 +29,6 @@
 <body class="p-4">
 
 <div id="app">
-  <!-- ورود -->
   <div v-if="!loggedIn" class="d-flex justify-content-center align-items-center min-vh-100">
     <div class="text-center">
       <svg width="240" height="240" viewBox="0 0 240 240" class="mb-4">
@@ -45,7 +44,6 @@
     </div>
   </div>
 
-  <!-- داشبورد -->
   <div v-else class="glass">
     <div class="d-flex justify-content-between align-items-center mb-5">
       <div class="d-flex align-items-center gap-4">
@@ -69,7 +67,6 @@
     </ul>
 
     <div class="tab-content">
-      <!-- ارزیابی -->
       <div class="tab-pane active" id="eval">
         <select v-model="targetCode" class="form-select form-select-lg mb-5 text-center fs-4">
           <option value="">انتخاب همکار</option>
@@ -91,7 +88,6 @@
         <button v-if="targetCode" @click="submit" class="btn btn-success btn-lg w-100 mt-5 fs-3">ارسال ارزیابی</button>
       </div>
 
-      <!-- نمودار -->
       <div class="tab-pane" id="chart">
         <div class="text-center py-5">
           <h2 class="text-info display-4 fw-bold mb-5">نمودار عملکرد ۳۶۰ درجه شما</h2>
@@ -101,7 +97,6 @@
         </div>
       </div>
 
-      <!-- مدیریت -->
       <div v-if="isAdmin" class="tab-pane" id="admin">
         <button @click="exportExcel" class="btn btn-outline-light btn-lg mb-4">دانلود اکسل</button>
         <table class="table table-dark table-hover text-center">
@@ -160,6 +155,7 @@ createApp({
       localStorage.setItem('mahrad360', JSON.stringify(personnel.value));
       alert('ثبت شد!');
       targetCode.value = ''; scores.value = Array(21).fill(3);
+      if (target.code === currentUser.value.code) drawChart();
     };
 
     const avg = p => p.evals?.length ? p.evals.reduce((a,e)=>a+e.scores.reduce((x,y)=>x+y,0),0)/(p.evals.length*21) : 0;
