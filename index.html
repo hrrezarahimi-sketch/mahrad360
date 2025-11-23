@@ -33,13 +33,13 @@
 </head>
 <body class="p-4">
 
-<div id="app" class="container py-4">
+<div id="app">
   <!-- صفحه ورود -->
-  <div v-if="!loggedIn" class="d-flex align-items-center justify-content-center min-vh-100">
+  <div v-if="!isLoggedIn" class="d-flex align-items-center justify-content-center min-vh-100">
     <div class="glass p-5 text-center" style="max-width:450px">
       <h1 class="display-3 fw-bold mb-4">ماهراد ۳۶۰</h1>
-      <input v-model="code" @keyup.enter="login" class="form-control form-control-lg text-center mb-4 fs-2" placeholder="کد پرسنلی" autofocus>
-      <button @click="login" class="btn btn-light btn-lg w-100 fs-3">ورود</button>
+      <input v-model="loginCode" @keyup.enter="doLogin" class="form-control form-control-lg text-center mb-4 fs-2" placeholder="کد پرسنلی" autofocus>
+      <button @click="doLogin" class="btn btn-light btn-lg w-100 fs-3">ورود</button>
       <small class="d-block mt-4 text-warning">مدیر → کد: admin</small>
     </div>
   </div>
@@ -51,11 +51,11 @@
         <h1 class="shamsi">{{shamsiDate}}</h1>
         <h2>سامانه ارزیابی عملکرد ۳۶۰ درجه</h2>
       </div>
-      <button @click="logout" class="btn btn-outline-light btn-lg">خروج</button>
+      <button @click="doLogout" class="btn btn-outline-light btn-lg">خروج</button>
     </div>
 
     <!-- داشبورد مدیر -->
-    <div v-if="isAdmin" class="row g-4 mb-5 text-center">
+    <div v-if="currentUser.code === 'admin'" class="row g-4 mb-5 text-center">
       <div class="col-12">
         <div class="card p-4">
           <h3>آپلود لیست پرسنل (اکسل)</h3>
@@ -76,7 +76,7 @@
 
     <!-- داشبورد پرسنل -->
     <div v-else class="row g-4 text-center mb-5">
-      <div class="col-md-3"><div class="card p-4"><h5>تکمیل ارزیابی</h5><div class="progress-ring mx-auto"><svg width="170" height="170"><circle cx="85" cy="85" r="77"/><circle cx="85" cy="85" r="77" class="bar" :stroke-dasharray="c" :stroke-dashoffset="o"/></svg><div class="text">{{percent}}%</div></div></div></div>
+      <div class="col-md-3"><div class="card p-4"><h5>تکمیل ارزیابی</h5><div class="progress-ring mx-auto"><svg width="170" height="170"><circle cx="85" cy="85" r="77"/><circle cx="85" cy="85" r="77" class="bar" :stroke-dasharray="circ" :stroke-dashoffset="offset"/></svg><div class="text">{{percent}}%</div></div></div></div>
       <div class="col-md-3"><div class="card p-4"><h5>پاداش سه‌ماهه</h5><h1 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h1></div></div>
       <div class="col-md-3"><div class="card p-4"><h5>گرید عملکرد</h5><div class="grade-circle mx-auto" :class="grade">{{grade}}</div></div></div>
       <div class="col-md-3"><div class="card p-4"><h5>امتیاز کل</h5><h1>{{avg.toFixed(2)}} از ۵</h1></div></div>
@@ -85,12 +85,12 @@
     <div class="row">
       <div class="col-lg-8">
         <div class="card p-4">
-          <h3 class="text-center mb-4">{{isAdmin ? 'میانگین عملکرد دپارتمان‌ها' : 'نمودار عملکرد من'}}</h3>
-          <canvas ref="radar" height="420"></canvas>
+          <h3 class="text-center mb-4">{{currentUser.code === 'admin' ? 'میانگین عملکرد دپارتمان‌ها' : 'نمودار عملکرد من'}}</h3>
+          <canvas ref="radarChart" height="420"></canvas>
         </div>
       </div>
       <div class="col-lg-4">
-        <div v-if="isAdmin" class="card p-4">
+        <div v-if="currentUser.code === 'admin'" class="card p-4">
           <h4>دپارتمان‌ها</h4>
           <div v-for="d in departments" class="dept-header mb-2" @click="d.show=!d.show">
             <strong>{{d.name}} ({{d.count}} نفر)</strong>
@@ -101,67 +101,90 @@
         </div>
         <div v-else class="card p-4">
           <h4>اطلاعات من</h4>
-          <p><strong>نام:</strong> {{user.name}}</p>
-          <p><strong>واحد:</strong> {{user.dept}}</p>
-          <p><strong>سمت:</strong> {{user.position||'—'}}</p>
+          <p><strong>نام:</strong> {{currentUser.name}}</p>
+          <p><strong>واحد:</strong> {{currentUser.dept}}</p>
+          <p><strong>سمت:</strong> {{currentUser.position||'—'}}</p>
         </div>
       </div>
     </div>
 
-    <!-- تب ارزیابی -->
+    <!-- ارزیابی -->
     <ul class="nav nav-tabs mt-5">
       <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
     </ul>
     <div class="tab-content">
       <div class="tab-pane active card p-4" id="eval">
-        <select v-model="target" class="form-select form-select-lg mb-4">
-          <option value="">انتخاب همکار برای ارزیابی</option>
-          <option v-for="p in people" :value="p" v-if="p.code !== user.code">{{p.name}} - {{p.dept}}</option>
+        <select v-model="selectedTarget" class="form-select form-select-lg mb-4">
+          <option value=null>انتخاب همکار برای ارزیابی</option>
+          <option v-for="p in people" :value="p" v-if="p.code !== currentUser.code">{{p.name}} - {{p.dept}}</option>
         </select>
-        <div v-if="target" class="row g-3">
+        <div v-if="selectedTarget" class="row g-3">
           <div class="col-md-6" v-for="(q,i) in questions" :key="i">
             <label class="form-label fw-bold">{{q}}</label>
-            <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(scores[i]-1)*25}%,#10b981 ${(scores[i]-1)*25}%)`">
-            <div class="d-flex justify-content-between mt-1"><small>ضعیف</small><strong class="fs-4">{{scores[i]}}</strong><small>عالی</small></div>
+            <input type="range" class="form-range" min="1" max="5" v-model.number="tempScores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(tempScores[i]-1)*25}%,#10b981 ${(tempScores[i]-1)*25}%)`">
+            <div class="d-flex justify-content-between mt-1"><small>ضعیف</small><strong class="fs-4">{{tempScores[i]}}</strong><small>عالی</small></div>
           </div>
         </div>
-        <button v-if="target" @click="submit" class="btn btn-success btn-lg w-100 mt-4">ارسال ارزیابی</button>
+        <button v-if="selectedTarget" @click="submitEval" class="btn btn-success btn-lg w-100 mt-4">ارسال ارزیابی</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-const {createApp, ref, onMounted, computed, nextTick} = Vue;
-let chart = null;
+const { createApp, ref, computed, onMounted, nextTick } = Vue;
+let myChart = null;
 
 createApp({
   setup() {
-    const code = ref('');
-    const loggedIn = ref(false);
-    const user = ref(null);
+    const isLoggedIn = ref(false);
+    const loginCode = ref('');
+    const currentUser = ref(null);
     const people = ref([]);
-    const target = ref(null);
-    const scores = ref(Array(21).fill(3));
-    const radar = ref(null);
+    const selectedTarget = ref(null);
+    const tempScores = ref(Array(21).fill(3));
+    const radarChart = ref(null);
     const shamsiDate = ref('');
-    
-    const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حظ محرمانگی"];
 
-    const load = () => {
-      const d = localStorage.getItem('mahrad360_final_v2');
-      if (d) people.value = JSON.parse(d);
+    const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"];
+
+    const loadData = () => {
+      const saved = localStorage.getItem('mahrad360_2025');
+      if (saved) people.value = JSON.parse(saved);
     };
-    const save = () => localStorage.setItem('mahrad360_final_v2', JSON.stringify(people.value));
 
-    const isAdmin = computed(() => user.value?.code === 'admin');
+    const saveData = () => localStorage.setItem('mahrad360_2025', JSON.stringify(people.value));
+
+    const doLogin = async () => {
+      let foundUser = null;
+      if (loginCode.value === 'admin') {
+        foundUser = { code: 'admin', name: 'مدیر سیستم' };
+      } else {
+        foundUser = people.value.find(p => p.code === loginCode.value);
+      }
+      if (!foundUser && loginCode.value !== 'admin') {
+        alert('کد پرسنلی اشتباه است');
+        return;
+      }
+      currentUser.value = foundUser || { code: '', name: 'نامشخص' };
+      isLoggedIn.value = true;
+      await nextTick();
+      drawChart();
+    };
+
+    const doLogout = () => {
+      isLoggedIn.value = false;
+      currentUser.value = null;
+      loginCode.value = '';
+    };
 
     const departments = computed(() => {
       const map = {};
       people.value.forEach(p => {
-        if (!map[p.dept]) map[p.dept] = { name: p.dept, count: 0, people: [], avg: 0, show: false };
-        map[p.dept].count++;
-        map[p.dept].people.push(p);
+        const dept = p.dept || 'نامشخص';
+        if (!map[dept]) map[dept] = { name: dept, count: 0, people: [], avg: 0, show: false };
+        map[dept].count++;
+        map[dept].people.push(p);
       });
       Object.values(map).forEach(d => {
         const sum = d.people.reduce((a, p) => a + calcAvg(p), 0);
@@ -170,110 +193,108 @@ createApp({
       return Object.values(map);
     });
 
-    const login = async () => {
-      if (code.value === 'admin') {
-        user.value = { code: 'admin', name: 'مدیر سیستم' };
-      } else {
-        const p = people.value.find(x => x.code === code.value);
-        if (p) user.value = p;
-        else { alert('کد پرسنلی اشتباه است'); return; }
-      }
-      loggedIn.value = true;
-      await nextTick();
-      draw();
+    const calcAvg = (p) => {
+      if (!p.evals || p.evals.length === 0) return 0;
+      const total = p.evals.reduce((a, e) => a + e.scores.reduce((x, y) => x + y, 0), 0);
+      return total / (p.evals.length * 21);
     };
 
-    const logout = () => {
-      loggedIn.value = false;
-      user.value = null;
-      code.value = '';
-    };
-
-    const submit = () => {
-      target.value.evals = target.value.evals || [];
-      target.value.evals.push({ from: user.value.code, scores: [...scores.value] });
-      save();
-      alert('ارزیابی ثبت شد');
-      target.value = null;
-      scores.value = Array(21).fill(3);
-      draw();
-    };
-
-    const calcAvg = p => p.evals?.length ? p.evals.reduce((a,e) => a + e.scores.reduce((x,y) => x + y, 0), 0) / (p.evals.length * 21) : 0;
-    const calcGrade = a => a >= 4.5 ? 'A' : a >= 4 ? 'B' : a >= 3.5 ? 'C' : a >= 3 ? 'D' : 'E';
-
-    const avg = computed(() => isAdmin.value ? 0 : calcAvg(user.value || {}));
-    const grade = computed(() => calcGrade(avg.value));
+    const avg = computed(() => currentUser.value.code === 'admin' ? 0 : calcAvg(currentUser.value));
+    const grade = computed(() => {
+      const a = avg.value;
+      if (a >= 4.5) return 'A';
+      if (a >= 4) return 'B';
+      if (a >= 3.5) return 'C';
+      if (a >= 3) return 'D';
+      return 'E';
+    });
     const percent = computed(() => Math.round((avg.value / 5) * 100));
     const bonus = computed(() => {
-      const base = avg.value * 1800000;
-      return grade.value === 'D' ? base * 0.8 : grade.value === 'E' ? base * 0.5 : base;
+      let b = avg.value * 1800000;
+      if (grade.value === 'D') b *= 0.8;
+      if (grade.value === 'E') b *= 0.5;
+      return Math.round(b);
     });
-    const c = 502, o = computed(() => 502 - (502 * percent.value / 100));
+    const circ = 502;
+    const offset = computed(() => circ - (circ * percent.value / 100));
 
-    const draw = () => {
-      if (!radar.value || !loggedIn.value) return;
-      if (chart) chart.destroy();
+    const drawChart = () => {
+      if (!radarChart.value) return;
+      if (myChart) myChart.destroy();
 
       let data = [], labels = [];
-      if (isAdmin.value) {
-        departments.value.forEach(d => { data.push(d.avg); labels.push(d.name); });
+      if (currentUser.value.code === 'admin') {
+        departments.value.forEach(d => {
+          data.push(d.avg);
+          labels.push(d.name);
+        });
       } else {
-        data = user.value?.evals?.length
-          ? user.value.evals.reduce((a,e) => e.scores.map((s,i) => a[i] = (a[i]||0) + s, a), Array(21).fill(0)).map(v => v / user.value.evals.length)
+        data = currentUser.value.evals?.length > 0
+          ? currentUser.value.evals.reduce((acc, e) => e.scores.map((s, i) => (acc[i] || 0) + s), Array(21).fill(0)).map(v => v / currentUser.value.evals.length)
           : Array(21).fill(3);
         labels = questions;
       }
 
-      chart = new Chart(radar.value, {
+      myChart = new Chart(radarChart.value, {
         type: 'radar',
         data: {
           labels,
           datasets: [
-            { label: isAdmin.value ? 'میانگین' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 },
-            { label: 'هدف', data: Array(labels.length).fill(5), borderColor: '#ef4444', borderWidth: 3, borderDash: [10,5], backgroundColor: 'rgba(239,68,68,0.1)' }
+            { label: currentUser.value.code === 'admin' ? 'میانگین' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 },
+            { label: 'هدف', data: Array(labels.length).fill(5), borderColor: '#ef4444', borderWidth: 3, borderDash: [10,5] }
           ]
         },
         options: {
-          scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.2)' }, pointLabels: { color: '#fff', font: { size: 14 } } } },
+          scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.2)' }, pointLabels: { color: '#fff' } } },
           plugins: { legend: { labels: { color: '#fff' } } }
         }
       });
     };
 
-    const importExcel = e => {
-      const f = e.target.files[0];
-      if (!f) return;
-      const r = new FileReader();
-      r.onload = a => {
-        const wb = XLSX.read(a.target.result);
-        const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        people.value = data.map(x => ({ 
-          code: String(x.کد||''), 
-          name: x.نام, 
-          dept: x.واحد||'نامشخص', 
-          position: x.سمت||'', 
-          evals: [] 
+    const submitEval = () => {
+      selectedTarget.value.evals = selectedTarget.value.evals || [];
+      selectedTarget.value.evals.push({ from: currentUser.value.code, scores: [...tempScores.value] });
+      saveData();
+      alert('ارزیابی با موفقیت ثبت شد');
+      selectedTarget.value = null;
+      tempScores.value = Array(21).fill(3);
+      drawChart();
+    };
+
+    const importExcel = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const wb = XLSX.read(ev.target.result);
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        people.value = rows.map(r => ({
+          code: String(r.کد || ''),
+          name: r.نام || '',
+          dept: r.واحد || 'نامشخص',
+          position: r.سمت || '',
+          evals: []
         }));
-        save();
-        alert(`${people.value.length} نفر با موفقیت وارد شد!`);
-        draw();
+        saveData();
+        alert(`${people.value.length} نفر وارد شد!`);
+        drawChart();
       };
-      r.readAsArrayBuffer(f);
+      reader.readAsArrayBuffer(file);
     };
 
     onMounted(() => {
-      load();
+      loadData();
       setInterval(() => {
         const d = new Date();
-        const j = jalaali.toJalaali(d.getFullYear(), d.getMonth()+1, d.getDate());
-        shamsiDate.value = `${j.jy}/${j.jm.toString().padStart(2,'0')}/${j.jd.toString().padStart(2,'0')}`;
+        const j = jalaali.toJalaali(d.getFullYear(), d.getMonth() + 1, d.getDate());
+        shamsiDate.value = `${j.jy}/${j.jm.toString().padStart(2, '0')}/${j.jd.toString().padStart(2, '0')}`;
       }, 1000);
     });
 
-    return { 
-      code, loggedIn, user, people, target, scores, questions, radar, shamsiDate, 
-      login, logout, submit, avg, grade, percent, bonus, c, o, draw, importExcel, isAdmin, departments 
+    return {
+      isLoggedIn, loginCode, currentUser, people, selectedTarget, tempScores, radarChart, shamsiDate,
+      questions, circ, offset, percent, bonus, grade, avg, departments,
+      doLogin, doLogout, submitEval, drawChart, importExcel
     };
   }
 }).mount('#app');
