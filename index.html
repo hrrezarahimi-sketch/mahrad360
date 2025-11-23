@@ -86,7 +86,7 @@
         <div v-if="target" class="row g-3">
           <div class="col-md-6" v-for="(q,i) in questions" :key="i">
             <label class="form-label">{{q}}</label>
-            <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(scores[i]-1)*25}%,#10b981 ${(scores[i]-1)*25}%)`">
+            <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e => e.target.style.background = `linear-gradient(to right, #ef4444 ${(scores[i]-1)*25}%, #10b981 ${(scores[i]-1)*25}%)`">
             <div class="d-flex justify-content-between"><small>ضعیف</small><strong>{{scores[i]}}</strong><small>عالی</small></div>
           </div>
         </div>
@@ -112,27 +112,108 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const {createApp,ref,onMounted,computed}=Vue; let chart=null;
+const {createApp, ref, onMounted, computed} = Vue;
+let chart = null;
+
 createApp({
-  setup(){
-    const code=ref(''),user=ref(null),people=ref([]),target=ref(null),scores=ref(Array(21).fill(3)),radar=ref(null),shamsiDate=ref('');
-    const questions=["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"];
+  setup() {
+    const code = ref(''), user = ref(null), people = ref([]), target = ref(null), scores = ref(Array(21).fill(3)), radar = ref(null), shamsiDate = ref('');
+    const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"];
 
-    const load=()=>{const d=localStorage.getItem('mahrad360');if(d)people.value=JSON.parse(d);else{people.value=[{code:"1001",name:"سیاوش قوچانی",dept:"فنی",evals:[]},{code:"1004",name:"محمدرضا شفیعی",dept:"فنی",evals:[]}];save();}}
-    const save=()=>localStorage.setItem('mahrad360',JSON.stringify(people.value));
+    const load = () => {
+      const d = localStorage.getItem('mahrad360');
+      if (d) people.value = JSON.parse(d);
+      else {
+        people.value = [{code:"1001",name:"سیاوش قوچانی",dept:"فنی",evals:[]},{code:"1004",name:"محمدرضا شفیعی",dept:"فنی",evals:[]}];
+        save();
+      }
+    };
+    const save = () => localStorage.setItem('mahrad360', JSON.stringify(people.value));
 
-    const login=()=>{if(code.value==='admin'){user.value={code:'admin',name:'مدیر'};return;} const p=people.value.find(x=>x.code===code.value); if(p){user.value=p;draw();}else alert('کد اشتباه');};
-    const submit=()=>{target.value.evals=target.value.evals||[];target.value.evals.push({from:user.value.code,scores:[...scores.value]});save();alert('ثبت شد');target.value=null;scores.value=Array(21).fill(3);if(user.value.code!=='admin')draw();};
-    const calcAvg=p=>p.evals?.length?p.evals.reduce((a,e)=>a+e.scores.reduce((x,y)=>x+y,0),0)/(p.evals.length*21):0;
-    const calcGrade=a=>a>=4.5?'A':a>=4?'B':a>=3.5?'C':a>=3?'D':'E';
-    const avg=computed(()=>user.value?.code==='admin'?0:calcAvg(user.value));
-    const grade=computed(()=>calcGrade(avg.value));
-    const percent=computed(()=>Math.round((avg.value/5)*100));
-    const bonus=computed(()=>{let b=avg.value*1500000;return grade.value==='D'?b*0.8:grade.value==='E'?b*0.5:b;});
-    const c=452,o=computed(()=>452-(452*percent.value/100));
+    const login = () => {
+      if (code.value === 'admin') { user.value = {code:'admin',name:'مدیر'}; return; }
+      const p = people.value.find(x => x.code === code.value);
+      if (p) { user.value = p; draw(); } else alert('کد اشتباه');
+    };
 
-    const draw=()=>{
-      if(chart)chart.destroy();
-      const data=user.value?.evals?.length?user.value.evals.reduce((a,e)=>e.scores.map((s,i)=>a[i]=(a
+    const submit = () => {
+      target.value.evals = target.value.evals || [];
+      target.value.evals.push({from: user.value.code, scores: [...scores.value]});
+      save();
+      alert('ثبت شد');
+      target.value = null;
+      scores.value = Array(21).fill(3);
+      if (user.value.code !== 'admin') draw();
+    };
+
+    const calcAvg = p => p.evals?.length ? p.evals.reduce((a,e) => a + e.scores.reduce((x,y) => x + y, 0), 0) / (p.evals.length * 21) : 0;
+    const calcGrade = a => a >= 4.5 ? 'A' : a >= 4 ? 'B' : a >= 3.5 ? 'C' : a >= 3 ? 'D' : 'E';
+
+    const avg = computed(() => user.value?.code === 'admin' ? 0 : calcAvg(user.value));
+    const grade = computed(() => calcGrade(avg.value));
+    const percent = computed(() => Math.round((avg.value / 5) * 100));
+    const bonus = computed(() => {
+      let b = avg.value * 1500000;
+      return grade.value === 'D' ? b * 0.8 : grade.value === 'E' ? b * 0.5 : b;
+    });
+    const c = 452, o = computed(() => 452 - (452 * percent.value / 100));
+
+    const draw = () => {
+      if (chart) chart.destroy();
+      const data = user.value?.evals?.length
+        ? user.value.evals.reduce((a,e) => e.scores.map((s,i) => a[i] = (a[i] || 0) + s, a), Array(21).fill(0)).map(v => v / user.value.evals.length)
+        : Array(21).fill(3);
+
+      chart = new Chart(radar.value, {
+        type: 'radar',
+        data: {
+          labels: questions,
+          datasets: [
+            { label: 'عملکرد فعلی', data, backgroundColor: 'rgba(99,102,241,0.25)', borderColor: '#6366f1', pointBackgroundColor: '#6366f1', borderWidth: 4 },
+            { label: 'هدف', data: Array(21).fill(5), backgroundColor: 'rgba(239,68,68,0.15)', borderColor: '#ef4444', borderWidth: 3, borderDash: [8,8] }
+          ]
+        },
+        options: {
+          scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.2)' }, pointLabels: { color: '#fff', font: { size: 13 } } } },
+          plugins: { legend: { labels: { color: '#fff' } } }
+        }
+      });
+    };
+
+    const exportExcel = () => {
+      const ws = XLSX.utils.json_to_sheet(people.value.map(p => ({نام: p.name, واحد: p.dept, تعداد: p.evals?.length||0, میانگین: calcAvg(p).toFixed(2), گرید: calcGrade(calcAvg(p))})));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "گزارش");
+      XLSX.writeFile(wb, "Mahrad360.xlsx");
+    };
+
+    const importExcel = e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = a => {
+        const wb = XLSX.read(a.target.result);
+        const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        people.value = data.map(x => ({ code: String(x.کد || ''), name: x.نام, dept: x.واحد, evals: [] }));
+        save();
+        alert('پرسنل با موفقیت وارد شد!');
+      };
+      r.readAsArrayBuffer(f);
+    };
+
+    onMounted(() => {
+      load();
+      setInterval(() => {
+        const d = new Date();
+        const j = jalaali.toJalaali(d.getFullYear(), d.getMonth()+1, d.getDate());
+        shamsiDate.value = `${j.jy}/${j.jm.toString().padStart(2,'0')}/${j.jd.toString().padStart(2,'0')}`;
+      }, 1000);
+    });
+
+    return { code, user, people, target, scores, questions, radar, shamsiDate, login, submit, avg, grade, percent, bonus, c, o, draw, exportExcel, importExcel, isAdmin: computed(() => user.value?.code === 'admin'), calcAvg, calcGrade };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
