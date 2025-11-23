@@ -3,29 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ماهراد ۳۶۰ | ارزیابی عملکرد آنلاین</title>
+  <title>ماهراد ۳۶۰ | ارزیابی عملکرد</title>
 
-  <!-- همه کتابخانه‌ها اول لود بشن -->
+  <!-- کتابخانه‌ها -->
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
 
   <style>
-    body {background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); color: #e2e8f0; font-family: 'Vazirmatn', sans-serif; min-height: 100vh;}
-    .glass {background: rgba(30,41,59,0.9); backdrop-filter: blur(20px); border-radius: 24px; border: 1px solid rgba(14,165,233,0.3); box-shadow: 0 25px 50px rgba(0,0,0,0.5);}
-    .btn-primary {background: linear-gradient(45deg,#0ea5e9,#0284c7); border:none; border-radius:16px; padding:14px 36px; font-weight:600;}
-    .btn-primary:hover {transform:translateY(-4px); box-shadow:0 15px 35px rgba(14,165,233,0.5);}
-    .shamsi-date {font-size:2.5rem; font-weight:900; background:linear-gradient(45deg,#0ea5e9,#06b6d4); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
-    .grade-A{color:#10b981}.grade-B{color:#3b82f6}.grade-C{color:#f59e0b}.grade-D{color:#f97316}.grade-E{color:#ef4444}
-    .avatar {width:90px;height:90px;border-radius:50%;border:5px solid #0ea5e9;display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:bold;background:#1e293b;}
-    .pulse {animation:pulse 3s infinite;} @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(14,165,233,0.7)}50%{box-shadow:0 0 0 25px rgba(14,165,233,0)}}
-    .nav-tabs .nav-link.active {background:linear-gradient(45deg,#0ea5e9,#0284c7);color:white;border-radius:16px;}
-    .range-slider {height:10px;border-radius:10px;background:#334155;}
-    .range-slider::-webkit-slider-thumb {appearance:none;width:28px;height:28px;border-radius:50%;background:#0ea5e9;box-shadow:0 0 20px rgba(14,165,233,0.8);}
+    :root {
+      --low: #ef4444;
+      --mid: #f59e0b;
+      --high: #10b981;
+      --primary: #0ea5e9;
+      --purple: #8b5cf6;
+      --gold: #fbbf24;
+    }
+    body {background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e293b 100%); color: #e2e8f0; font-family: 'Vazirmatn', sans-serif; min-height: 100vh;}
+    .glass {background: rgba(30,41,59,0.9); backdrop-filter: blur(20px); border-radius: 28px; border: 1px solid rgba(100,200,255,0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.6);}
+    .card-eval {background: linear-gradient(145deg, #1e293b, #334155); border-radius: 20px; transition: all 0.4s;}
+    .card-eval:hover {transform: translateY(-10px); box-shadow: 0 20px 40px rgba(14,165,233,0.4);}
+    .btn-primary {background: linear-gradient(45deg, var(--primary), #22d3ee); border: none; border-radius: 20px; padding: 14px 40px; font-weight: 700;}
+    .shamsi-date {font-size: 2.8rem; font-weight: 900; background: linear-gradient(45deg, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+    .avatar {width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(45deg, #0ea5e9, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; font-weight: bold; box-shadow: 0 0 30px rgba(14,165,233,0.6);}
+    .range-slider {height: 14px; border-radius: 50px; background: #334155; outline: none; transition: background 0.4s;}
+    .range-slider::-webkit-slider-thumb {
+      appearance: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; box-shadow: 0 0 25px rgba(0,0,0,0.5);
+      background: linear-gradient(45deg, #10b981, #22c55e);
+      transition: all 0.3s;
+    }
+    .grade-A {color: #10b981; text-shadow: 0 0 30px #10b98180;}
+    .grade-B {color: #3b82f6;}
+    .grade-C {color: #fbbf24; text-shadow: 0 0 30px #fbbf2480;}
+    .grade-D {color: #f97316;}
+    .grade-E {color: #ef4444; text-shadow: 0 0 30px #ef444480;}
   </style>
 </head>
 <body>
@@ -34,89 +48,72 @@
   <!-- ورود -->
   <div v-if="!loggedIn" class="d-flex justify-content-center align-items-center min-vh-100">
     <div class="text-center">
-      <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="220" class="mb-5 pulse" alt="ماهراد">
-      <h1 class="text-white mb-5">سامانه ارزیابی ۳۶۰ درجه</h1>
+      <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="240" class="mb-4">
+      <h1 class="text-white mb-5 display-4 fw-bold">سامانه ارزیابی ۳۶۰ درجه</h1>
       <div class="glass p-5 col-md-6 mx-auto">
-        <input v-model="loginCode" class="form-control form-control-lg text-center mb-4 fs-3" placeholder="کد پرسنلی" autofocus>
-        <button @click="login" class="btn btn-primary btn-lg w-100">ورود به سامانه</button>
-        <small class="text-white-50 mt-3 d-block">مدیر: admin</small>
+        <input v-model="loginCode" class="form-control form-control-lg text-center mb-4 fs-2" placeholder="کد پرسنلی" autofocus>
+        <button @click="login" class="btn btn-primary btn-lg w-100 fs-4">ورود به سامانه</button>
+        <small class="text-info mt-3 d-block">مدیر سیستم: admin</small>
       </div>
     </div>
   </div>
 
   <!-- داشبورد -->
   <div v-else class="container">
-    <div class="glass p-5">
+    <div class="glass p-5 mb-5">
       <div class="d-flex justify-content-between align-items-center mb-5">
         <div class="d-flex align-items-center gap-4">
-          <div class="avatar pulse">{{ currentUser.name?.charAt(0) || '?' }}</div>
+          <div class="avatar">{{ currentUser.name?.charAt(0) }}</div>
           <div>
-            <h2 class="text-white mb-0">سلام، {{ currentUser.name }}</h2>
-            <p class="text-info fs-4 mb-0">{{ currentUser.dept }} • {{ currentUser.position }}</p>
+            <h2 class="text-white mb-1 fw-bold">سلام، {{ currentUser.name }}</h2>
+            <p class="text-info fs-3 mb-0">{{ currentUser.dept }} • {{ currentUser.position }}</p>
           </div>
         </div>
         <div class="text-start">
-          <div class="shamsi-date" id="shamsi">۱۴۰۴/۰۹/۰۳</div>
-          <div id="clock" class="text-white-50 fs-3">۰۰:۰۰:۰۰</div>
+          <div class="shamsi-date" id="shamsi"></div>
+          <div id="clock" class="text-white fs-3"></div>
         </div>
       </div>
 
       <ul class="nav nav-tabs mb-5">
-        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#myeval">نمودار من</a></li>
-        <li v-if="isAdmin" class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#admin">مدیریت</a></li>
+        <li class="nav-item"><a class="nav-link active fs-5" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
+        <li class="nav-item"><a class="nav-link fs-5" data-bs-toggle="tab" href="#myeval">نمودار عملکرد من</a></li>
+        <li v-if="isAdmin" class="nav-item"><a class="nav-link fs-5" data-bs-toggle="tab" href="#admin">مدیریت</a></li>
       </ul>
 
       <div class="tab-content">
+        <!-- ارزیابی -->
         <div class="tab-pane active" id="eval">
-          <h3 class="text-center text-info mb-5">به همکار خود امتیاز دهید</h3>
-          <select v-model="selectedColleague" class="form-select form-select-lg mb-4 glass">
-            <option value="">انتخاب همکار</option>
-            <option v-for="p in personnel" :value="p.code">{{ p.name }} - {{ p.dept }}</option>
+          <h3 class="text-center text-info mb-5 fw-bold">ارزیابی ۳۶۰ درجه — انتخاب همکار</h3>
+          <select v-model="selectedColleague" class="form-select form-select-lg glass mb-5 text-center fs-4">
+            <option value="">انتخاب همکار برای ارزیابی</option>
+            <option v-for="p in personnel" :value="p.code">{{ p.name }} ({{ p.dept }})</option>
           </select>
 
-          <div v-if="selectedColleague" class="glass p-5">
-            <h4 class="text-center text-white mb-5">ارزیابی: {{ getName(selectedColleague) }}</h4>
-            <div class="row g-4">
-              <div class="col-md-6" v-for="(label,key) in criteria" :key="key">
-                <div class="glass p-4 text-center rounded-4">
-                  <label class="text-white-50 fs-5 d-block">{{ label }}</label>
-                  <input type="range" class="form-range range-slider mt-3" min="0" max="100" v-model.number="scores[key]">
-                  <div class="text-info fs-3 fw-bold mt-2">{{ scores[key] }}</div>
+          <div v-if="selectedColleague" class="row g-4">
+            <div class="col-md-6" v-for="(q, index) in questions" :key="index">
+              <div class="card-eval p-4 text-center">
+                <h5 class="text-white mb-3">{{ q }}</h5>
+                <input type="range" class="form-range range-slider" min="1" max="5" v-model.number="scores[index]" @input="updateSliderColor($event.target, scores[index])">
+                <div class="mt-3">
+                  <span class="fs-1 fw-bold" :style="{color: getScoreColor(scores[index])}">{{ scores[index] }}</span>
+                  <small class="text-white-50 d-block">{{ getScoreText(scores[index]) }}</small>
                 </div>
               </div>
             </div>
-            <button @click="submitEval" class="btn btn-success btn-lg w-100 mt-5">ارسال ارزیابی</button>
           </div>
+          <button v-if="selectedColleague" @click="submitEval" class="btn btn-success btn-lg w-100 mt-5 fs-4">ارسال ارزیابی نهایی</button>
         </div>
 
+        <!-- نمودار -->
         <div class="tab-pane" id="myeval">
           <div class="text-center py-5">
-            <h2 class="text-info mb-5">نمودار عملکرد ۳۶۰ درجه شما</h2>
-            <canvas id="radarChart" height="450"></canvas>
-            <h1 class="mt-5" :class="'grade-'+suggestGrade(avg(currentUser))">{{ suggestGrade(avg(currentUser)) }}</h1>
-            <p class="fs-4 text-white-50">میانگین: {{ avg(currentUser) }}/100</p>
-          </div>
-        </div>
-
-        <div v-if="isAdmin" class="tab-pane" id="admin">
-          <h3 class="text-center text-warning mb-5">پنل مدیریت</h3>
-          <div class="table-responsive">
-            <table class="table table-dark table-hover text-center">
-              <thead class="table-primary">
-                <tr><th>کد</th><th>نام</th><th>واحد</th><th>تعداد ارزیابی</th><th>میانگین</th><th>گرید</th></tr>
-              </thead>
-              <tbody>
-                <tr v-for="p in personnel">
-                  <td>{{ p.code }}</td>
-                  <td>{{ p.name }}</td>
-                  <td>{{ p.dept }}</td>
-                  <td>{{ p.evals?.length || 0 }}</td>
-                  <td>{{ avg(p) }}</td>
-                  <td><strong :class="'grade-'+suggestGrade(avg(p))">{{ suggestGrade(avg(p)) }}</strong></td>
-                </tr>
-              </tbody>
-            </table>
+            <h2 class="text-info mb-5 display-5">نمودار عملکرد ۳۶۰ درجه شما</h2>
+            <canvas id="radarChart" height="500"></canvas>
+            <div class="mt-5">
+              <h1 class="display-1 fw-bold" :class="'grade-'+suggestGrade(avgScore)">{{ suggestGrade(avgScore) }}</h1>
+              <p class="fs-3 text-info">میانگین کل: {{ avgScore.toFixed(1) }} از ۵</p>
+            </div>
           </div>
         </div>
       </div>
@@ -126,81 +123,111 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const app = Vue.createApp({
+Vue.createApp({
   data: () => ({
     loginCode: '', loggedIn: false, isAdmin: false, currentUser: {}, personnel: [], selectedColleague: '',
-    scores: {quality:50,speed:50,teamwork:50,responsibility:50,innovation:50,discipline:50},
-    criteria: {quality:"کیفیت کار",speed:"سرعت",teamwork:"همکاری",responsibility:"مسئولیت‌پذیری",innovation:"نوآوری",discipline:"انضباط"}
+    scores: Array(12).fill(3),
+    questions: [
+      "کیفیت و دقت در انجام وظایف", "سرعت و به‌موقع بودن کارها", "همکاری و کار تیمی",
+      "مسئولیت‌پذیری و تعهد", "نوآوری و خلاقیت", "انضباط و رعایت قوانین",
+      "ارتباطات و تعامل با همکاران", "حل مسئله و تصمیم‌گیری", "یادگیری و توسعه فردی",
+      "رهبری و هدایت دیگران", "مدیریت زمان و اولویت‌بندی", "رضایت مشتری داخلی/خارجی"
+    ]
   }),
+  computed: {
+    avgScore() {
+      if (!this.currentUser.evals || this.currentUser.evals.length === 0) return 0;
+      const total = this.currentUser.evals.reduce((sum, e) => sum + e.scores.reduce((a,b)=>a+b,0), 0);
+      return total / (this.currentUser.evals.length * 12);
+    }
+  },
   created() {
-    const saved = localStorage.getItem('mahrad360');
+    const saved = localStorage.getItem('mahrad360_v2');
     if (saved) this.personnel = JSON.parse(saved);
     if (this.personnel.length === 0) this.initData();
     this.startClock();
   },
   methods: {
     login() {
-      if (this.loginCode === 'admin') { this.isAdmin = true; this.currentUser = {name:'مدیر سیستم',dept:'مدیریت',position:'مدیرکل'}; this.loggedIn = true; return; }
+      if (this.loginCode === 'admin') { this.isAdmin = true; this.currentUser = {name:'مدیر سیستم',dept:'مدیریت'}; this.loggedIn = true; return; }
       const user = this.personnel.find(p => p.code === this.loginCode);
-      if (user) { this.currentUser = user; this.loggedIn = true; this.$nextTick(() => this.drawRadar()); }
-      else alert('کد پرسنلی اشتباه است!');
+      if (user) { this.currentUser = user; this.loggedIn = true; this.$nextTick(()=>this.drawRadar()); }
+      else alert('کد اشتباه است!');
     },
     initData() {
       this.personnel = [
         {code:"1001",name:"سیاوش قوچانی",dept:"فنی",position:"کارشناس",evals:[]},
         {code:"1004",name:"محمدرضا شفیعی",dept:"فنی",position:"مدیر پروژه",evals:[]},
         {code:"1007",name:"حدیقه کیقبادی",dept:"مالی",position:"حسابدار",evals:[]},
-        {code:"1008",name:"مرضیه صالحی",dept:"منابع انسانی",position:"کارشناس",evals:[]}
       ];
       this.save();
     },
     submitEval() {
       const target = this.personnel.find(p => p.code === this.selectedColleague);
       target.evals = target.evals || [];
-      target.evals.push({from: this.currentUser.code, scores: {...this.scores}});
+      target.evals.push({from: this.currentUser.code, scores: [...this.scores]});
       this.save();
-      alert('ارزیابی ثبت شد ✅');
+      alert('ارزیابی با موفقیت ثبت شد! ⭐');
       this.selectedColleague = '';
-      this.scores = {quality:50,speed:50,teamwork:50,responsibility:50,innovation:50,discipline:50};
+      this.scores = Array(12).fill(3);
       this.$nextTick(() => this.drawRadar());
     },
-    avg(p) {
-      if (!p.evals || p.evals.length === 0) return 0;
-      const total = p.evals.reduce((s,e) => s + Object.values(e.scores).reduce((a,b)=>a+b,0), 0);
-      return Math.round(total / (p.evals.length * 6));
-    },
     suggestGrade(avg) {
-      if (avg >= 90) return 'A';
-      if (avg >= 80) return 'B';
-      if (avg >= 70) return 'C';
-      if (avg >= 60) return 'D';
-      return 'E';
+      if (avg >= 4.5) return 'A'; if (avg >= 4) return 'B'; if (avg >= 3.5) return 'C'; if (avg >= 3) return 'D'; return 'E';
     },
-    getName(code) { return this.personnel.find(p=>p.code===code)?.name || ''; },
+    getScoreColor(score) {
+      if (score <= 2) return '#ef4444';
+      if (score <= 3) return '#f59e0b';
+      if (score <= 4) return '#eab308';
+      return '#10b981';
+    },
+    getScoreText(score) {
+      const texts = ["ضعیف", "نیاز به بهبود", "متوسط", "خوب", "عالی"];
+      return texts[score-1];
+    },
+    updateSliderColor(el, val) {
+      const percent = (val - 1) / 4 * 100;
+      el.style.background = `linear-gradient(to right, #ef4444 0%, #f59e0b ${percent/2}%, #10b981 ${percent}%, #10b981 100%)`;
+    },
     drawRadar() {
       const ctx = document.getElementById('radarChart');
       if (!ctx) return;
-      const values = this.currentUser.evals?.length > 0 
-        ? Object.values(this.currentUser.evals[this.currentUser.evals.length-1].scores)
-        : [50,50,50,50,50,50];
+      const data = this.currentUser.evals?.length > 0 
+        ? this.currentUser.evals.map(e => e.scores).flat().reduce((a,b,i)=> (a[i%12] = (a[i%12]||0) + b, a), []).map((s,i)=>s/(this.currentUser.evals.length))
+        : Array(12).fill(3);
       new Chart(ctx, {
         type: 'radar',
-        data: { labels: Object.values(this.criteria), datasets: [{ label: 'عملکرد', data: values, backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9', pointBackgroundColor: '#0ea5e9' }] },
-        options: { scales: { r: { min:0, max:100, ticks: {stepSize:20} } } }
+        data: {
+          labels: this.questions,
+          datasets: [{
+            label: 'عملکرد شما',
+            data: data,
+            backgroundColor: 'rgba(14,165,233,0.3)',
+            borderColor: '#0ea5e9',
+            pointBackgroundColor: '#8b5cf6',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#8b5cf6',
+            borderWidth: 4
+          }]
+        },
+        options: {
+          scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 }, grid: { color: '#475569' }, angleLines: { color: '#475569' } } },
+          plugins: { legend: { labels: { color: '#e2e8f0' } } }
+        }
       });
     },
-    save() { localStorage.setItem('mahrad360', JSON.stringify(this.personnel)); },
+    save() { localStorage.setItem('mahrad360_v2', JSON.stringify(this.personnel)); },
     startClock() {
       setInterval(() => {
-        const now = new Date();
-        const j = jalaali.toJalaali(now.getFullYear(), now.getMonth()+1, now.getDate());
+        const d = new Date();
+        const j = jalaali.toJalaali(d.getFullYear(), d.getMonth()+1, d.getDate());
         document.getElementById('shamsi').innerText = `${j.jy}/${j.jm.toString().padStart(2,'0')}/${j.jd.toString().padStart(2,'0')}`;
-        document.getElementById('clock').innerText = now.toLocaleTimeString('fa-IR');
+        document.getElementById('clock').innerText = d.toLocaleTimeString('fa-IR');
       }, 1000);
     }
   }
-});
-app.mount('#app');
+}).mount('#app');
 </script>
 </body>
 </html>
