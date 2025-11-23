@@ -1,51 +1,138 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ماهراد ۳۶۰ - سیستم مدیریت عملکرد ۱۴۰۵</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <style>
-        :root {
-            --primary-color: #3a5998;
-            --secondary-color: #f8f9fa;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --info-color: #17a2b8;
-            --dark-color: #2c3e50;
-            --light-color: #ecf0f1;
-            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            --gradient-5: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            --gradient-6: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Tahoma', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            position: relative;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ماهراد ۳۶۰ - ۱۴۰۵</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:'Vazirmatn',sans-serif;min-height:100vh}
+    .glass{background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);border-radius:25px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 20px 50px rgba(0,0,0,0.3)}
+    .card{background:rgba(255,255,255,0.15);backdrop-filter:blur(15px);border-radius:20px;border:none;transition:.3s}
+    .card:hover{transform:translateY(-8px)}
+    .grade-circle{width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:4.5rem;font-weight:900;box-shadow:0 0 40px}
+    .A{background:#10b981;box-shadow:0 0 40px #10b98180}
+    .B{background:#3b82f6;box-shadow:0 0 40px #3b82f680}
+    .C{background:#fbbf24;box-shadow:0 0 40px #fbbf2480}
+    .D{background:#f97316;box-shadow:0 0 40px #f9731680}
+    .E{background:#ef4444;box-shadow:0 0 40px #ef444480}
+    .progress-ring{position:relative;width:160px;height:160px}
+    .progress-ring svg{transform:rotate(-90deg)}
+    .progress-ring circle{fill:none;stroke:#334155;stroke-width:14}
+    .progress-ring .bar{stroke:#10b981;stroke-linecap:round;stroke-width:14;transition:.8s}
+    .progress-ring .text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.2rem;font-weight:900}
+    .shamsi{font-size:2.8rem;font-weight:900;background:linear-gradient(45deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .radar-canvas{background:rgba(255,255,255,0.1);border-radius:20px;padding:20px}
+  </style>
+</head>
+<body class="p-3">
+
+<div id="app" class="container py-4">
+  <div v-if="!user" class="d-flex align-items-center justify-content-center min-vh-100">
+    <div class="glass p-5 text-center" style="max-width:420px">
+      <h1 class="display-4 fw-bold mb-4">ماهراد ۳۶۰</h1>
+      <input v-model="code" @keyup.enter="login" class="form-control form-control-lg text-center mb-4 fs-3" placeholder="کد پرسنلی" autofocus>
+      <button @click="login" class="btn btn-light btn-lg w-100 fs-4">ورود</button>
+      <small class="d-block mt-3">مدیر: admin</small>
+    </div>
+  </div>
+
+  <div v-else class="glass p-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+      <div><h1 class="shamsi">{{shamsiDate}}</h1><h3>سامانه مدیریت عملکرد کارکنان</h3></div>
+      <button @click="user=null" class="btn btn-outline-light">خروج</button>
+    </div>
+
+    <div class="row g-4 mb-5 text-center">
+      <div class="col-md-3"><div class="card p-4"><h5>تکمیل ارزیابی</h5>
+        <div class="progress-ring mx-auto"><svg width="160" height="160"><circle cx="80" cy="80" r="72"/><circle cx="80" cy="80" r="72" class="bar" :stroke-dasharray="c" :stroke-dashoffset="o"/></svg><div class="text">{{percent}}%</div></div>
+      </div></div>
+      <div class="col-md-3"><div class="card p-4"><h5>پاداش سه‌ماهه</h5><h2 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h2></div></div>
+      <div class="col-md-3"><div class="card p-4"><h5>گرید عملکرد</h5><div class="grade-circle mx-auto" :class="grade">{{grade}}</div></div></div>
+      <div class="col-md-3"><div class="card p-4"><h5>امتیاز کل</h5><h2>{{avg.toFixed(2)}} / ۵.۰۰</h2></div></div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8"><div class="card p-4 radar-canvas"><h4 class="text-center mb-4">نمودار عملکرد ۳۶۰ درجه</h4>
+        <canvas ref="radar" height="420"></canvas>
+        <div class="text-center mt-3"><span class="badge bg-primary fs-6">عملکرد فعلی</span> <span class="badge bg-danger fs-6">هدف</span></div>
+      </div></div>
+      <div class="col-lg-4"><div class="card p-4"><h5>اهداف دوره جاری</h5>
+        <ul class="list-group list-group-flush text-white">
+          <li class="list-group-item bg-transparent d-flex justify-content-between">افزایش فروش ۱۵٪ <span class="text-success">در جریان</span></li>
+          <li class="list-group-item bg-transparent d-flex justify-content-between">کاهش زمان پاسخگویی <span class="text-success">تکمیل شده</span></li>
+          <li class="list-group-item bg-transparent d-flex justify-content-between">دوره مدیریت پروژه <span class="text-warning">در حال انجام</span></li>
+        </ul>
+      </div></div>
+    </div>
+
+    <ul class="nav nav-tabs mt-5 mb-4">
+      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#eval">ارزیابی ۳۶۰</a></li>
+      <li v-if="isAdmin" class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#admin">مدیریت</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="eval" class="card p-4">
+        <select v-model="target" class="form-select form-select-lg mb-4">
+          <option value="">انتخاب همکار برای ارزیابی</option>
+          <option v-for="p in people" :value="p">{{p.name}} - {{p.dept}}</option>
+        </select>
+        <div v-if="target" class="row g-3">
+          <div class="col-md-6" v-for="(q,i) in questions" :key="i">
+            <label class="form-label">{{q}}</label>
+            <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(scores[i]-1)*25}%,#10b981 ${(scores[i]-1)*25}%)`">
+            <div class="d-flex justify-content-between"><small>ضعیف</small><strong>{{scores[i]}}</strong><small>عالی</small></div>
+          </div>
+        </div>
+        <button v-if="target" @click="submit" class="btn btn-success btn-lg w-100 mt-4">ارسال ارزیابی</button>
+      </div>
+
+      <div v-if="isAdmin" class="tab-pane" id="admin">
+        <button @click="exportExcel" class="btn btn-light mb-3">دانلود گزارش اکسل</button>
+        <input type="file" @change="importExcel" accept=".xlsx" class="form-control mb-3">
+        <div class="table-responsive">
+          <table class="table table-dark text-center">
+            <thead><tr><th>نام</th><th>واحد</th><th>تعداد ارزیابی</th><th>میانگین</th><th>گرید</th></tr></thead>
+            <tbody>
+              <tr v-for="p in people">
+                <td>{{p.name}}</td><td>{{p.dept}}</td><td>{{p.evals?.length||0}}</td><td>{{calcAvg(p).toFixed(2)}}</td>
+                <td><div class="grade-circle mx-auto" :class="calcGrade(calcAvg(p))" style="width:60px;height:60px;font-size:2rem">{{calcGrade(calcAvg(p))}}</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const {createApp,ref,onMounted,computed}=Vue; let chart=null;
+createApp({
+  setup(){
+    const code=ref(''),user=ref(null),people=ref([]),target=ref(null),scores=ref(Array(21).fill(3)),radar=ref(null),shamsiDate=ref('');
+    const questions=["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"];
+
+    const load=()=>{const d=localStorage.getItem('mahrad360');if(d)people.value=JSON.parse(d);else{people.value=[{code:"1001",name:"سیاوش قوچانی",dept:"فنی",evals:[]},{code:"1004",name:"محمدرضا شفیعی",dept:"فنی",evals:[]}];save();}}
+    const save=()=>localStorage.setItem('mahrad360',JSON.stringify(people.value));
+
+    const login=()=>{if(code.value==='admin'){user.value={code:'admin',name:'مدیر'};return;} const p=people.value.find(x=>x.code===code.value); if(p){user.value=p;draw();}else alert('کد اشتباه');};
+    const submit=()=>{target.value.evals=target.value.evals||[];target.value.evals.push({from:user.value.code,scores:[...scores.value]});save();alert('ثبت شد');target.value=null;scores.value=Array(21).fill(3);if(user.value.code!=='admin')draw();};
+    const calcAvg=p=>p.evals?.length?p.evals.reduce((a,e)=>a+e.scores.reduce((x,y)=>x+y,0),0)/(p.evals.length*21):0;
+    const calcGrade=a=>a>=4.5?'A':a>=4?'B':a>=3.5?'C':a>=3?'D':'E';
+    const avg=computed(()=>user.value?.code==='admin'?0:calcAvg(user.value));
+    const grade=computed(()=>calcGrade(avg.value));
+    const percent=computed(()=>Math.round((avg.value/5)*100));
+    const bonus=computed(()=>{let b=avg.value*1500000;return grade.value==='D'?b*0.8:grade.value==='E'?b*0.5:b;});
+    const c=452,o=computed(()=>452-(452*percent.value/100));
+
+    const draw=()=>{
+      if(chart)chart.destroy();
+      const data=user.value?.evals?.length?user.value.evals.reduce((a,e)=>e.scores.map((s,i)=>a[i]=(a
