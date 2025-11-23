@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ماهراد ۳۶۰ | ارزیابی عملکرد آنلاین</title>
 
-  <!-- کتابخانه‌ها -->
+  <!-- همه کتابخانه‌ها اول لود بشن -->
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -16,56 +16,48 @@
 
   <style>
     body {background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); color: #e2e8f0; font-family: 'Vazirmatn', sans-serif; min-height: 100vh;}
-    .glass {background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(20px); border-radius: 24px; border: 1px solid rgba(14, 165, 233, 0.3); box-shadow: 0 25px 50px rgba(0,0,0,0.5);}
-    .btn-primary {background: linear-gradient(45deg, #0ea5e9, #0284c7); border: none; border-radius: 16px; padding: 14px 36px; font-weight: 600; transition: all 0.4s;}
-    .btn-primary:hover {transform: translateY(-4px); box-shadow: 0 15px 35px rgba(14,165,233,0.5);}
-    .shamsi-date {font-size: 2.5rem; font-weight: 900; background: linear-gradient(45deg, #0ea5e9, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
-    .grade-A {color: #10b981; text-shadow: 0 0 30px rgba(16,185,129,0.5);}
-    .grade-B {color: #3b82f6; text-shadow: 0 0 30px rgba(59,130,246,0.5);}
-    .grade-C {color: #f59e0b; text-shadow: 0 0 30px rgba(245,158,11,0.5);}
-    .grade-D {color: #f97316;}
-    .grade-E {color: #ef4444; text-shadow: 0 0 30px rgba(239,68,68,0.5);}
-    .avatar {width: 90px; height: 90px; border-radius: 50%; border: 5px solid #0ea5e9; object-fit: cover;}
-    .pulse {animation: pulse 3s infinite;}
-    @keyframes pulse {0%,100% {box-shadow: 0 0 0 0 rgba(14,165,233,0.7);} 50% {box-shadow: 0 0 0 25px rgba(14,165,233,0);}}
-    .nav-tabs .nav-link {border-radius: 16px; margin: 0 8px; font-weight: 600; background: rgba(255,255,255,0.05);}
-    .nav-tabs .nav-link.active {background: linear-gradient(45deg, #0ea5e9, #0284c7); color: white; box-shadow: 0 4px 20px rgba(14,165,233,0.4);}
-    .range-slider {height: 10px; border-radius: 10px; background: #334155;}
-    .range-slider::-webkit-slider-thumb {appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #0ea5e9; box-shadow: 0 0 20px rgba(14,165,233,0.8);}
+    .glass {background: rgba(30,41,59,0.9); backdrop-filter: blur(20px); border-radius: 24px; border: 1px solid rgba(14,165,233,0.3); box-shadow: 0 25px 50px rgba(0,0,0,0.5);}
+    .btn-primary {background: linear-gradient(45deg,#0ea5e9,#0284c7); border:none; border-radius:16px; padding:14px 36px; font-weight:600;}
+    .btn-primary:hover {transform:translateY(-4px); box-shadow:0 15px 35px rgba(14,165,233,0.5);}
+    .shamsi-date {font-size:2.5rem; font-weight:900; background:linear-gradient(45deg,#0ea5e9,#06b6d4); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+    .grade-A{color:#10b981}.grade-B{color:#3b82f6}.grade-C{color:#f59e0b}.grade-D{color:#f97316}.grade-E{color:#ef4444}
+    .avatar {width:90px;height:90px;border-radius:50%;border:5px solid #0ea5e9;display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;font-weight:bold;background:#1e293b;}
+    .pulse {animation:pulse 3s infinite;} @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(14,165,233,0.7)}50%{box-shadow:0 0 0 25px rgba(14,165,233,0)}}
+    .nav-tabs .nav-link.active {background:linear-gradient(45deg,#0ea5e9,#0284c7);color:white;border-radius:16px;}
+    .range-slider {height:10px;border-radius:10px;background:#334155;}
+    .range-slider::-webkit-slider-thumb {appearance:none;width:28px;height:28px;border-radius:50%;background:#0ea5e9;box-shadow:0 0 20px rgba(14,165,233,0.8);}
   </style>
 </head>
 <body>
 
 <div id="app" class="p-4 min-vh-100">
-  <!-- صفحه ورود -->
+  <!-- ورود -->
   <div v-if="!loggedIn" class="d-flex justify-content-center align-items-center min-vh-100">
     <div class="text-center">
-      <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="220" class="mb-5 pulse" alt="لوگو ماهراد">
+      <img src="https://i.ibb.co/0jY3Z7h/mahrad-logo.png" width="220" class="mb-5 pulse" alt="ماهراد">
       <h1 class="text-white mb-5">سامانه ارزیابی ۳۶۰ درجه</h1>
       <div class="glass p-5 col-md-6 mx-auto">
         <input v-model="loginCode" class="form-control form-control-lg text-center mb-4 fs-3" placeholder="کد پرسنلی" autofocus>
         <button @click="login" class="btn btn-primary btn-lg w-100">ورود به سامانه</button>
-        <small class="text-white-50 mt-3 d-block">مدیر سیستم: admin</small>
+        <small class="text-white-50 mt-3 d-block">مدیر: admin</small>
       </div>
     </div>
   </div>
 
-  <!-- داشبورد اصلی -->
+  <!-- داشبورد -->
   <div v-else class="container">
     <div class="glass p-5">
       <div class="d-flex justify-content-between align-items-center mb-5">
         <div class="d-flex align-items-center gap-4">
-          <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fs-1 fw-bold" style="width:90px;height:90px;">
-            {{ currentUser.name?.charAt(0) }}
-          </div>
+          <div class="avatar pulse">{{ currentUser.name?.charAt(0) || '?' }}</div>
           <div>
             <h2 class="text-white mb-0">سلام، {{ currentUser.name }}</h2>
             <p class="text-info fs-4 mb-0">{{ currentUser.dept }} • {{ currentUser.position }}</p>
           </div>
         </div>
         <div class="text-start">
-          <div class="shamsi-date" id="shamsi"></div>
-          <div id="clock" class="text-white-50 fs-3"></div>
+          <div class="shamsi-date" id="shamsi">۱۴۰۴/۰۹/۰۳</div>
+          <div id="clock" class="text-white-50 fs-3">۰۰:۰۰:۰۰</div>
         </div>
       </div>
 
@@ -76,7 +68,6 @@
       </ul>
 
       <div class="tab-content">
-        <!-- ارزیابی -->
         <div class="tab-pane active" id="eval">
           <h3 class="text-center text-info mb-5">به همکار خود امتیاز دهید</h3>
           <select v-model="selectedColleague" class="form-select form-select-lg mb-4 glass">
@@ -87,11 +78,11 @@
           <div v-if="selectedColleague" class="glass p-5">
             <h4 class="text-center text-white mb-5">ارزیابی: {{ getName(selectedColleague) }}</h4>
             <div class="row g-4">
-              <div class="col-md-6" v-for="(label, key) in criteria" :key="key">
-                <div class="glass p-4 rounded-4 text-center">
-                  <label class="text-white-50 fs-5">{{ label }}</label>
+              <div class="col-md-6" v-for="(label,key) in criteria" :key="key">
+                <div class="glass p-4 text-center rounded-4">
+                  <label class="text-white-50 fs-5 d-block">{{ label }}</label>
                   <input type="range" class="form-range range-slider mt-3" min="0" max="100" v-model.number="scores[key]">
-                  <div class="text-info fs-3 mt-2 fw-bold">{{ scores[key] }}</div>
+                  <div class="text-info fs-3 fw-bold mt-2">{{ scores[key] }}</div>
                 </div>
               </div>
             </div>
@@ -99,22 +90,22 @@
           </div>
         </div>
 
-        <!-- نمودار من -->
         <div class="tab-pane" id="myeval">
           <div class="text-center py-5">
             <h2 class="text-info mb-5">نمودار عملکرد ۳۶۰ درجه شما</h2>
             <canvas id="radarChart" height="450"></canvas>
-            <h1 class="mt-5" :class="'grade-'+(currentUser.grade || 'C')">{{ currentUser.grade || 'C' }}</h1>
-            <p class="fs-4 text-white-50">میانگین امتیاز: {{ avg(currentUser) }}/100</p>
+            <h1 class="mt-5" :class="'grade-'+suggestGrade(avg(currentUser))">{{ suggestGrade(avg(currentUser)) }}</h1>
+            <p class="fs-4 text-white-50">میانگین: {{ avg(currentUser) }}/100</p>
           </div>
         </div>
 
-        <!-- پنل مدیر -->
         <div v-if="isAdmin" class="tab-pane" id="admin">
           <h3 class="text-center text-warning mb-5">پنل مدیریت</h3>
           <div class="table-responsive">
             <table class="table table-dark table-hover text-center">
-              <thead class="table-primary"><tr><th>کد</th><th>نام</th><th>واحد</th><th>تعداد ارزیابی</th><th>میانگین</th><th>گرید</th></tr></thead>
+              <thead class="table-primary">
+                <tr><th>کد</th><th>نام</th><th>واحد</th><th>تعداد ارزیابی</th><th>میانگین</th><th>گرید</th></tr>
+              </thead>
               <tbody>
                 <tr v-for="p in personnel">
                   <td>{{ p.code }}</td>
@@ -135,7 +126,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-Vue.createApp({
+const app = Vue.createApp({
   data: () => ({
     loginCode: '', loggedIn: false, isAdmin: false, currentUser: {}, personnel: [], selectedColleague: '',
     scores: {quality:50,speed:50,teamwork:50,responsibility:50,innovation:50,discipline:50},
@@ -149,9 +140,9 @@ Vue.createApp({
   },
   methods: {
     login() {
-      if (this.loginCode === 'admin') { this.isAdmin = true; this.currentUser = {name:'مدیر سیستم',dept:'مدیریت',position:'مدیرکل',grade:'A'}; this.loggedIn = true; return; }
+      if (this.loginCode === 'admin') { this.isAdmin = true; this.currentUser = {name:'مدیر سیستم',dept:'مدیریت',position:'مدیرکل'}; this.loggedIn = true; return; }
       const user = this.personnel.find(p => p.code === this.loginCode);
-      if (user) { this.currentUser = user; this.loggedIn = true; this.$nextTick(()=>this.drawRadar()); }
+      if (user) { this.currentUser = user; this.loggedIn = true; this.$nextTick(() => this.drawRadar()); }
       else alert('کد پرسنلی اشتباه است!');
     },
     initData() {
@@ -159,54 +150,57 @@ Vue.createApp({
         {code:"1001",name:"سیاوش قوچانی",dept:"فنی",position:"کارشناس",evals:[]},
         {code:"1004",name:"محمدرضا شفیعی",dept:"فنی",position:"مدیر پروژه",evals:[]},
         {code:"1007",name:"حدیقه کیقبادی",dept:"مالی",position:"حسابدار",evals:[]},
-        {code:"1008",name:"مرضیه صالحی",dept:"منابع انسانی",position:"کارشناس",evals:[]},
+        {code:"1008",name:"مرضیه صالحی",dept:"منابع انسانی",position:"کارشناس",evals:[]}
       ];
       this.save();
     },
     submitEval() {
-      if (!this.selectedColleague) return;
       const target = this.personnel.find(p => p.code === this.selectedColleague);
       target.evals = target.evals || [];
       target.evals.push({from: this.currentUser.code, scores: {...this.scores}});
       this.save();
-      alert('ارزیابی با موفقیت ثبت شد!');
+      alert('ارزیابی ثبت شد ✅');
       this.selectedColleague = '';
       this.scores = {quality:50,speed:50,teamwork:50,responsibility:50,innovation:50,discipline:50};
       this.$nextTick(() => this.drawRadar());
     },
     avg(p) {
       if (!p.evals || p.evals.length === 0) return 0;
-      const total = p.evals.reduce((sum, e) => sum + Object.values(e.scores).reduce((a,b)=>a+b,0), 0);
+      const total = p.evals.reduce((s,e) => s + Object.values(e.scores).reduce((a,b)=>a+b,0), 0);
       return Math.round(total / (p.evals.length * 6));
     },
     suggestGrade(avg) {
-      if (avg >= 90) return 'A'; if (avg >= 80) return 'B'; if (avg >= 70) return 'C';
-      if (avg >= 60) return 'D'; return 'E';
+      if (avg >= 90) return 'A';
+      if (avg >= 80) return 'B';
+      if (avg >= 70) return 'C';
+      if (avg >= 60) return 'D';
+      return 'E';
     },
     getName(code) { return this.personnel.find(p=>p.code===code)?.name || ''; },
     drawRadar() {
       const ctx = document.getElementById('radarChart');
       if (!ctx) return;
-      const data = this.currentUser.evals && this.currentUser.evals.length > 0 
+      const values = this.currentUser.evals?.length > 0 
         ? Object.values(this.currentUser.evals[this.currentUser.evals.length-1].scores)
         : [50,50,50,50,50,50];
       new Chart(ctx, {
         type: 'radar',
-        data: { labels: Object.values(this.criteria), datasets: [{ label: 'عملکرد شما', data, backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9', pointBackgroundColor: '#0ea5e9' }] },
-        options: { scales: { r: { min:0, max:100 } } }
+        data: { labels: Object.values(this.criteria), datasets: [{ label: 'عملکرد', data: values, backgroundColor: 'rgba(14,165,233,0.2)', borderColor: '#0ea5e9', pointBackgroundColor: '#0ea5e9' }] },
+        options: { scales: { r: { min:0, max:100, ticks: {stepSize:20} } } }
       });
     },
     save() { localStorage.setItem('mahrad360', JSON.stringify(this.personnel)); },
     startClock() {
       setInterval(() => {
-        const d = new Date();
-        const j = jalaali.toJalaali(d.getFullYear(), d.getMonth()+1, d.getDate());
+        const now = new Date();
+        const j = jalaali.toJalaali(now.getFullYear(), now.getMonth()+1, now.getDate());
         document.getElementById('shamsi').innerText = `${j.jy}/${j.jm.toString().padStart(2,'0')}/${j.jd.toString().padStart(2,'0')}`;
-        document.getElementById('clock').innerText = d.toLocaleTimeString('fa-IR');
+        document.getElementById('clock').innerText = now.toLocaleTimeString('fa-IR');
       }, 1000);
     }
   }
-}).mount('#app');
+});
+app.mount('#app');
 </script>
 </body>
 </html>
