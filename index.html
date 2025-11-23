@@ -34,7 +34,8 @@
 <body class="p-4">
 
 <div id="app" class="container py-4">
-  <div v-if="!user" class="d-flex align-items-center justify-content-center min-vh-100">
+  <!-- صفحه ورود -->
+  <div v-if="!loggedIn" class="d-flex align-items-center justify-content-center min-vh-100">
     <div class="glass p-5 text-center" style="max-width:450px">
       <h1 class="display-3 fw-bold mb-4">ماهراد ۳۶۰</h1>
       <input v-model="code" @keyup.enter="login" class="form-control form-control-lg text-center mb-4 fs-2" placeholder="کد پرسنلی" autofocus>
@@ -43,13 +44,14 @@
     </div>
   </div>
 
+  <!-- داشبورد اصلی -->
   <div v-else class="glass p-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h1 class="shamsi">{{shamsiDate}}</h1>
         <h2>سامانه ارزیابی عملکرد ۳۶۰ درجه</h2>
       </div>
-      <button @click="user=null" class="btn btn-outline-light btn-lg">خروج</button>
+      <button @click="logout" class="btn btn-outline-light btn-lg">خروج</button>
     </div>
 
     <!-- داشبورد مدیر -->
@@ -65,7 +67,9 @@
         <div class="card p-4">
           <h4>{{dept.name}}</h4>
           <h2>{{dept.count}} نفر</h2>
-          <div class="progress mt-3" style="height:30px"><div class="progress-bar bg-success" :style="{width: dept.avg*20+'%'}">{{(dept.avg).toFixed(2)}}</div></div>
+          <div class="progress mt-3" style="height:30px">
+            <div class="progress-bar bg-success" :style="{width: (dept.avg * 20) + '%'}">{{dept.avg.toFixed(2)}}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -81,7 +85,7 @@
     <div class="row">
       <div class="col-lg-8">
         <div class="card p-4">
-          <h3 class="text-center mb-4">{{isAdmin?'میانگین عملکرد دپارتمان‌ها':'نمودار عملکرد من'}}</h3>
+          <h3 class="text-center mb-4">{{isAdmin ? 'میانگین عملکرد دپارتمان‌ها' : 'نمودار عملکرد من'}}</h3>
           <canvas ref="radar" height="420"></canvas>
         </div>
       </div>
@@ -104,13 +108,14 @@
       </div>
     </div>
 
+    <!-- تب ارزیابی -->
     <ul class="nav nav-tabs mt-5">
       <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
     </ul>
     <div class="tab-content">
       <div class="tab-pane active card p-4" id="eval">
         <select v-model="target" class="form-select form-select-lg mb-4">
-          <option value="">انتخاب همکار</option>
+          <option value="">انتخاب همکار برای ارزیابی</option>
           <option v-for="p in people" :value="p" v-if="p.code !== user.code">{{p.name}} - {{p.dept}}</option>
         </select>
         <div v-if="target" class="row g-3">
@@ -132,14 +137,24 @@ let chart = null;
 
 createApp({
   setup() {
-    const code = ref(''), user = ref(null), people = ref([]), target = ref(null), scores = ref(Array(21).fill(3)), radar = ref(null), shamsiDate = ref('');
-    const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"];
+    const code = ref('');
+    const loggedIn = ref(false);
+    const user = ref(null);
+    const people = ref([]);
+    const target = ref(null);
+    const scores = ref(Array(21).fill(3));
+    const radar = ref(null);
+    const shamsiDate = ref('');
+    
+    const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حظ محرمانگی"];
 
     const load = () => {
-      const d = localStorage.getItem('mahrad360_v8');
+      const d = localStorage.getItem('mahrad360_final_v2');
       if (d) people.value = JSON.parse(d);
     };
-    const save = () => localStorage.setItem('mahrad360_v8', JSON.stringify(people.value));
+    const save = () => localStorage.setItem('mahrad360_final_v2', JSON.stringify(people.value));
+
+    const isAdmin = computed(() => user.value?.code === 'admin');
 
     const departments = computed(() => {
       const map = {};
@@ -161,18 +176,24 @@ createApp({
       } else {
         const p = people.value.find(x => x.code === code.value);
         if (p) user.value = p;
-        else { alert('کد اشتباه'); return; }
+        else { alert('کد پرسنلی اشتباه است'); return; }
       }
+      loggedIn.value = true;
       await nextTick();
       draw();
     };
 
+    const logout = () => {
+      loggedIn.value = false;
+      user.value = null;
+      code.value = '';
+    };
+
     const submit = () => {
-      if (!target.value) return;
       target.value.evals = target.value.evals || [];
       target.value.evals.push({ from: user.value.code, scores: [...scores.value] });
       save();
-      alert('ارزیابی با موفقیت ثبت شد');
+      alert('ارزیابی ثبت شد');
       target.value = null;
       scores.value = Array(21).fill(3);
       draw();
@@ -181,7 +202,7 @@ createApp({
     const calcAvg = p => p.evals?.length ? p.evals.reduce((a,e) => a + e.scores.reduce((x,y) => x + y, 0), 0) / (p.evals.length * 21) : 0;
     const calcGrade = a => a >= 4.5 ? 'A' : a >= 4 ? 'B' : a >= 3.5 ? 'C' : a >= 3 ? 'D' : 'E';
 
-    const avg = computed(() => isAdmin.value ? 0 : calcAvg(user.value));
+    const avg = computed(() => isAdmin.value ? 0 : calcAvg(user.value || {}));
     const grade = computed(() => calcGrade(avg.value));
     const percent = computed(() => Math.round((avg.value / 5) * 100));
     const bonus = computed(() => {
@@ -189,10 +210,9 @@ createApp({
       return grade.value === 'D' ? base * 0.8 : grade.value === 'E' ? base * 0.5 : base;
     });
     const c = 502, o = computed(() => 502 - (502 * percent.value / 100));
-    const isAdmin = computed(() => user.value?.code === 'admin');
 
     const draw = () => {
-      if (!radar.value) return;
+      if (!radar.value || !loggedIn.value) return;
       if (chart) chart.destroy();
 
       let data = [], labels = [];
@@ -210,7 +230,7 @@ createApp({
         data: {
           labels,
           datasets: [
-            { label: isAdmin.value ? 'میانگین دپارتمان' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 },
+            { label: isAdmin.value ? 'میانگین' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 },
             { label: 'هدف', data: Array(labels.length).fill(5), borderColor: '#ef4444', borderWidth: 3, borderDash: [10,5], backgroundColor: 'rgba(239,68,68,0.1)' }
           ]
         },
@@ -228,9 +248,15 @@ createApp({
       r.onload = a => {
         const wb = XLSX.read(a.target.result);
         const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        people.value = data.map(x => ({ code: String(x.کد||''), name: x.نام, dept: x.واحد||'نامشخص', position: x.سمت||'', evals: [] }));
+        people.value = data.map(x => ({ 
+          code: String(x.کد||''), 
+          name: x.نام, 
+          dept: x.واحد||'نامشخص', 
+          position: x.سمت||'', 
+          evals: [] 
+        }));
         save();
-        alert(`${people.value.length} نفر وارد شد!`);
+        alert(`${people.value.length} نفر با موفقیت وارد شد!`);
         draw();
       };
       r.readAsArrayBuffer(f);
@@ -245,7 +271,10 @@ createApp({
       }, 1000);
     });
 
-    return { code, user, people, target, scores, questions, radar, shamsiDate, login, submit, avg, grade, percent, bonus, c, o, draw, importExcel, isAdmin, departments };
+    return { 
+      code, loggedIn, user, people, target, scores, questions, radar, shamsiDate, 
+      login, logout, submit, avg, grade, percent, bonus, c, o, draw, importExcel, isAdmin, departments 
+    };
   }
 }).mount('#app');
 </script>
