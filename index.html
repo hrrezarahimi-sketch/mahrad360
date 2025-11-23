@@ -54,8 +54,8 @@
       <button @click="doLogout" class="btn btn-outline-light btn-lg">خروج</button>
     </div>
 
-    <!-- داشبورد مدیر -->
-    <div v-if="currentUser.code === 'admin'" class="row g-4 mb-5 text-center">
+    <!-- فقط برای مدیر -->
+    <div v-if="isAdmin" class="row g-4 mb-5 text-center">
       <div class="col-12">
         <div class="card p-4">
           <h3>آپلود لیست پرسنل (اکسل)</h3>
@@ -74,7 +74,7 @@
       </div>
     </div>
 
-    <!-- داشبورد پرسنل -->
+    <!-- فقط برای پرسنل عادی -->
     <div v-else class="row g-4 text-center mb-5">
       <div class="col-md-3"><div class="card p-4"><h5>تکمیل ارزیابی</h5><div class="progress-ring mx-auto"><svg width="170" height="170"><circle cx="85" cy="85" r="77"/><circle cx="85" cy="85" r="77" class="bar" :stroke-dasharray="circ" :stroke-dashoffset="offset"/></svg><div class="text">{{percent}}%</div></div></div></div>
       <div class="col-md-3"><div class="card p-4"><h5>پاداش سه‌ماهه</h5><h1 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h1></div></div>
@@ -85,12 +85,13 @@
     <div class="row">
       <div class="col-lg-8">
         <div class="card p-4">
-          <h3 class="text-center mb-4">{{currentUser.code === 'admin' ? 'میانگین عملکرد دپارتمان‌ها' : 'نمودار عملکرد من'}}</h3>
+          <h3 class="text-center mb-4">{{isAdmin ? 'میانگین عملکرد دپارتمان‌ها' : 'نمودار عملکرد من'}}</h3>
           <canvas ref="radarChart" height="420"></canvas>
         </div>
       </div>
       <div class="col-lg-4">
-        <div v-if="currentUser.code === 'admin'" class="card p-4">
+        <!-- فقط برای مدیر -->
+        <div v-if="isAdmin" class="card p-4">
           <h4>دپارتمان‌ها</h4>
           <div v-for="d in departments" class="dept-header mb-2" @click="d.show=!d.show">
             <strong>{{d.name}} ({{d.count}} نفر)</strong>
@@ -99,16 +100,17 @@
             </div>
           </div>
         </div>
+        <!-- فقط برای پرسنل -->
         <div v-else class="card p-4">
           <h4>اطلاعات من</h4>
           <p><strong>نام:</strong> {{currentUser.name}}</p>
-          <p><strong>واحد:</strong> {{currentUser.dept}}</p>
-          <p><strong>سمت:</strong> {{currentUser.position||'—'}}</p>
+          <p><strong>واحد:</strong> {{currentUser.dept || '—'}}</p>
+          <p><strong>سمت:</strong> {{currentUser.position || '—'}}</p>
         </div>
       </div>
     </div>
 
-    <!-- ارزیابی -->
+    <!-- ارزیابی (برای همه) -->
     <ul class="nav nav-tabs mt-5">
       <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
     </ul>
@@ -149,24 +151,25 @@ createApp({
     const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"];
 
     const loadData = () => {
-      const saved = localStorage.getItem('mahrad360_2025');
+      const saved = localStorage.getItem('mahrad360_final_2025');
       if (saved) people.value = JSON.parse(saved);
     };
+    const saveData = () => localStorage.setItem('mahrad360_final_2025', JSON.stringify(people.value));
 
-    const saveData = () => localStorage.setItem('mahrad360_2025', JSON.stringify(people.value));
+    const isAdmin = computed(() => currentUser.value?.code === 'admin');
 
     const doLogin = async () => {
-      let foundUser = null;
+      let userObj = null;
       if (loginCode.value === 'admin') {
-        foundUser = { code: 'admin', name: 'مدیر سیستم' };
+        userObj = { code: 'admin', name: 'مدیر سیستم' };
       } else {
-        foundUser = people.value.find(p => p.code === loginCode.value);
+        userObj = people.value.find(p => p.code === loginCode.value);
       }
-      if (!foundUser && loginCode.value !== 'admin') {
-        alert('کد پرسنلی اشتباه است');
+      if (!userObj) {
+        alert('کد اشتباه است');
         return;
       }
-      currentUser.value = foundUser || { code: '', name: 'نامشخص' };
+      currentUser.value = userObj;
       isLoggedIn.value = true;
       await nextTick();
       drawChart();
@@ -194,19 +197,15 @@ createApp({
     });
 
     const calcAvg = (p) => {
-      if (!p.evals || p.evals.length === 0) return 0;
+      if (!p?.evals?.length) return 0;
       const total = p.evals.reduce((a, e) => a + e.scores.reduce((x, y) => x + y, 0), 0);
       return total / (p.evals.length * 21);
     };
 
-    const avg = computed(() => currentUser.value.code === 'admin' ? 0 : calcAvg(currentUser.value));
+    const avg = computed(() => isAdmin.value ? 0 : calcAvg(currentUser.value));
     const grade = computed(() => {
       const a = avg.value;
-      if (a >= 4.5) return 'A';
-      if (a >= 4) return 'B';
-      if (a >= 3.5) return 'C';
-      if (a >= 3) return 'D';
-      return 'E';
+      return a >= 4.5 ? 'A' : a >= 4 ? 'B' : a >= 3.5 ? 'C' : a >= 3 ? 'D' : 'E';
     });
     const percent = computed(() => Math.round((avg.value / 5) * 100));
     const bonus = computed(() => {
@@ -223,13 +222,13 @@ createApp({
       if (myChart) myChart.destroy();
 
       let data = [], labels = [];
-      if (currentUser.value.code === 'admin') {
+      if (isAdmin.value) {
         departments.value.forEach(d => {
           data.push(d.avg);
           labels.push(d.name);
         });
       } else {
-        data = currentUser.value.evals?.length > 0
+        data = currentUser.value.evals?.length
           ? currentUser.value.evals.reduce((acc, e) => e.scores.map((s, i) => (acc[i] || 0) + s), Array(21).fill(0)).map(v => v / currentUser.value.evals.length)
           : Array(21).fill(3);
         labels = questions;
@@ -240,7 +239,7 @@ createApp({
         data: {
           labels,
           datasets: [
-            { label: currentUser.value.code === 'admin' ? 'میانگین' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 },
+            { label: isAdmin.value ? 'میانگین' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 },
             { label: 'هدف', data: Array(labels.length).fill(5), borderColor: '#ef4444', borderWidth: 3, borderDash: [10,5] }
           ]
         },
@@ -255,7 +254,7 @@ createApp({
       selectedTarget.value.evals = selectedTarget.value.evals || [];
       selectedTarget.value.evals.push({ from: currentUser.value.code, scores: [...tempScores.value] });
       saveData();
-      alert('ارزیابی با موفقیت ثبت شد');
+      alert('ارزیابی ثبت شد');
       selectedTarget.value = null;
       tempScores.value = Array(21).fill(3);
       drawChart();
@@ -293,7 +292,7 @@ createApp({
 
     return {
       isLoggedIn, loginCode, currentUser, people, selectedTarget, tempScores, radarChart, shamsiDate,
-      questions, circ, offset, percent, bonus, grade, avg, departments,
+      questions, circ, offset, percent, bonus, grade, avg, departments, isAdmin,
       doLogin, doLogout, submitEval, drawChart, importExcel
     };
   }
