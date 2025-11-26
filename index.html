@@ -36,10 +36,10 @@
 
 <div id="app" v-cloak>
   <!-- صفحه ورود -->
-  <div v-if="!isLoggedIn" class="d-flex align-items-center justify-content-center min-vh-100">
+  <div v-if="!loggedIn" class="d-flex align-items-center justify-content-center min-vh-100">
     <div class="glass p-5 text-center" style="max-width:460px;width:100%">
       <h1 class="display-2 fw-bold mb-5 text-warning">ماهراد ۳۶۰</h1>
-      <input v-model="loginCode" @keyup.enter="login" class="form-control form-control-lg text-center mb-4 fs-1" placeholder="کد پرسنلی" autofocus>
+      <input v-model="code" @keyup.enter="login" class="form-control form-control-lg text-center mb-4 fs-1" placeholder="کد پرسنلی" autofocus>
       <button @click="login" class="btn btn-light btn-lg w-100 fs-3 fw-bold">ورود به سامانه</button>
       <small class="d-block mt-4 text-info opacity-75">مدیر سیستم → کد: <code class="bg-dark px-2 py-1 rounded">admin</code></small>
     </div>
@@ -55,53 +55,57 @@
       <button @click="logout" class="btn btn-outline-light btn-lg px-5">خروج</button>
     </div>
 
-    <!-- داشبورد مدیر -->
-    <div v-if="isAdmin" class="row g-4 mb-5 text-center">
-      <div class="col-12">
-        <div class="card p-4">
-          <h3 class="mb-4">آپلود لیست پرسنل (فایل اکسل)</h3>
-          <input type="file" @change="importExcel" accept=".xlsx,.xls" class="form-control form-control-lg">
-          <small class="text-warning d-block mt-2">ستون‌های مورد نیاز: کد، نام، واحد، سمت</small>
+    <!-- فقط مدیر -->
+    <template v-if="currentUser.code === 'admin'">
+      <div class="row g-4 mb-5 text-center">
+        <div class="col-12">
+          <div class="card p-4">
+            <h3 class="mb-4">آپلود لیست پرسنل (فایل اکسل)</h3>
+            <input type="file" @change="importExcel" accept=".xlsx,.xls" class="form-control form-control-lg">
+            <small class="text-warning d-block mt-2">ستون‌های مورد نیاز: کد، نام، واحد، سمت</small>
+          </div>
         </div>
-      </div>
-      <div class="col-lg-4 col-md-6" v-for="dept in departments" :key="dept.name">
-        <div class="card p-4 h-100">
-          <h4 class="fw-bold">{{dept.name}}</h4>
-          <h2 class="display-6">{{dept.count}} نفر</h2>
-          <div class="progress mt-3" style="height:32px">
-            <div class="progress-bar bg-success fw-bold" :style="{width: (dept.avg * 20) + '%'}">{{dept.avg.toFixed(2)}}</div>
+        <div class="col-lg-4 col-md-6" v-for="dept in departments" :key="dept.name">
+          <div class="card p-4 h-100">
+            <h4 class="fw-bold">{{dept.name}}</h4>
+            <h2 class="display-6">{{dept.count}} نفر</h2>
+            <div class="progress mt-3" style="height:32px">
+              <div class="progress-bar bg-success fw-bold" :style="{width: (dept.avg * 20) + '%'}">{{dept.avg.toFixed(2)}}</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
 
-    <!-- داشبورد پرسنل -->
-    <div v-else class="row g-4 text-center mb-5">
-      <div class="col-md-3 col-6">
-        <div class="card p-4"><h5>تکمیل ارزیابی</h5>
-          <div class="progress-ring mx-auto"><svg width="170" height="170"><circle cx="85" cy="85" r="77"/><circle cx="85" cy="85" r="77" class="bar" stroke-dasharray="502" :stroke-dashoffset="offset"/></svg><div class="text">{{percent}}%</div></div>
+    <!-- فقط پرسنل -->
+    <template v-else>
+      <div class="row g-4 text-center mb-5">
+        <div class="col-md-3 col-6">
+          <div class="card p-4"><h5>تکمیل ارزیابی</h5>
+            <div class="progress-ring mx-auto"><svg width="170" height="170"><circle cx="85" cy="85" r="77"/><circle cx="85" cy="85" r="77" class="bar" stroke-dasharray="502" :stroke-dashoffset="offset"/></svg><div class="text">{{percent}}%</div></div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card p-4"><h5>پاداش سه‌ماهه</h5><h1 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h1></div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card p-4"><h5>گرید عملکرد</h5><div class="grade-circle mx-auto" :class="grade">{{grade}}</div></div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card p-4"><h5>امتیاز کل</h5><h1>{{avg.toFixed(2)}} از ۵</h1></div>
         </div>
       </div>
-      <div class="col-md-3 col-6">
-        <div class="card p-4"><h5>پاداش سه‌ماهه</h5><h1 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h1></div>
-      </div>
-      <div class="col-md-3 col-6">
-        <div class="card p-4"><h5>گرید عملکرد</h5><div class="grade-circle mx-auto" :class="grade">{{grade}}</div></div>
-      </div>
-      <div class="col-md-3 col-6">
-        <div class="card p-4"><h5>امتیاز کل</h5><h1>{{avg.toFixed(2)}} از ۵</h1></div>
-      </div>
-    </div>
+    </template>
 
     <div class="row">
       <div class="col-lg-8 mb-4 mb-lg-0">
         <div class="card p-4">
-          <h3 class="text-center mb-4">{{isAdmin ? 'میانگین عملکرد دپارتمان‌ها' : 'نمودار رادار عملکرد من'}}</h3>
+          <h3 class="text-center mb-4">{{currentUser.code === 'admin' ? 'میانگین عملکرد دپارتمان‌ها' : 'نمودار رادار عملکرد من'}}</h3>
           <canvas ref="radar" height="400"></canvas>
         </div>
       </div>
       <div class="col-lg-4">
-        <div v-if="isAdmin" class="card p-4">
+        <div v-if="currentUser.code === 'admin'" class="card p-4">
           <h4 class="mb-4">لیست دپارتمان‌ها</h4>
           <div v-for="d in departments" class="dept-header" @click="d.show = !d.show">
             <strong>{{d.name}} ({{d.count}} نفر)</strong>
@@ -132,7 +136,7 @@
         <div v-if="target" class="row g-3">
           <div class="col-md-6" v-for="(q,i) in questions" :key="i">
             <label class="form-label fw-bold">{{q}}</label>
-            <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 0%,#ef4444 ${(scores[i]-1)*25}%,#10b981 ${(scores[i]-1)*25}%,#10b981 100%)`">
+            <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="updateSlider($event.target, i)">
             <div class="d-flex justify-content-between"><small>ضعیف</small><strong class="fs-3">{{scores[i]}}</strong><small>عالی</small></div>
           </div>
         </div>
@@ -144,14 +148,13 @@
 
 <script>
 const { createApp, ref, computed, onMounted, nextTick } = Vue
-let chartInstance = null
+let chart = null
 
 createApp({
   setup() {
-    const isLoggedIn = ref(false)
-    const isAdmin = ref(false)
-    const loginCode = ref('')
-    const currentUser = ref(null)
+    const loggedIn = ref(false)
+    const code = ref('')
+    const currentUser = ref({ code: '', name: '' })
     const people = ref([])
     const target = ref(null)
     const scores = ref(Array(21).fill(3))
@@ -160,26 +163,24 @@ createApp({
 
     const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"]
 
-    const load = () => { const d = localStorage.getItem('mahrad360_final'); if (d) people.value = JSON.parse(d) }
-    const save = () => localStorage.setItem('mahrad360_final', JSON.stringify(people.value))
+    const load = () => { const d = localStorage.getItem('mahrad360_v9'); if (d) people.value = JSON.parse(d) }
+    const save = () => localStorage.setItem('mahrad360_v9', JSON.stringify(people.value))
 
     const login = async () => {
-      let user = null
-      if (loginCode.value === 'admin') {
+      let user
+      if (code.value === 'admin') {
         user = { code: 'admin', name: 'مدیر سیستم' }
-        isAdmin.value = true
       } else {
-        user = people.value.find(p => p.code === loginCode.value)
+        user = people.value.find(p => p.code === code.value)
         if (!user) return alert('کد پرسنلی اشتباه است!')
-        isAdmin.value = false
       }
       currentUser.value = user
-      isLoggedIn.value = true
+      loggedIn.value = true
       await nextTick()
       drawChart()
     }
 
-    const logout = () => { isLoggedIn.value = false; loginCode.value = ''; currentUser.value = null }
+    const logout = () => { loggedIn.value = false; code.value = '' }
 
     const departments = computed(() => {
       const map = {}
@@ -189,36 +190,45 @@ createApp({
         map[d].count++
         map[d].people.push(p)
       })
-      return Object.values(map).map(d => {
-        d.avg = d.people.reduce((s, p) => s + calcAvg(p), 0) / d.count || 0
-        return d
+      return Object.values(map).map(dept => {
+        dept.avg = dept.count ? dept.people.reduce((s, p) => s + calcAvg(p), 0) / dept.count : 0
+        return dept
       })
     })
 
     const calcAvg = p => p.evals?.length ? p.evals.reduce((a,e) => a + e.scores.reduce((x,y)=>x+y,0),0)/(p.evals.length*21) : 0
-    const avg = computed(() => isAdmin.value ? 0 : calcAvg(currentUser.value))
+    const avg = computed(() => currentUser.value.code === 'admin' ? 0 : calcAvg(currentUser.value))
     const grade = computed(() => avg.value >= 4.5 ? 'A' : avg.value >= 4 ? 'B' : avg.value >= 3.5 ? 'C' : avg.value >= 3 ? 'D' : 'E')
     const percent = computed(() => Math.round((avg.value / 5) * 100))
     const bonus = computed(() => Math.round(avg.value * 1800000 * (grade.value === 'D' ? 0.8 : grade.value === 'E' ? 0.5 : 1)))
     const offset = computed(() => 502 - (502 * percent.value / 100))
 
+    const updateSlider = (el, i) => {
+      const val = scores.value[i]
+      el.style.background = `linear-gradient(to right, #ef4444 0%, #ef4444 ${((val-1)*25)}%, #10b981 ${((val-1)*25)}%, #10b981 100%)`
+    }
+
     const drawChart = () => {
       if (!radar.value) return
-      if (chartInstance) chartInstance.destroy()
-      const data = isAdmin.value 
+      if (chart) chart.destroy()
+      const isAdmin = currentUser.value.code === 'admin'
+      const data = isAdmin 
         ? departments.value.map(d => d.avg)
         : currentUser.value.evals?.length 
           ? currentUser.value.evals.reduce((a,e)=>e.scores.map((s,i)=>(a[i]||0)+s), Array(21).fill(0)).map(v => v / currentUser.value.evals.length)
           : Array(21).fill(3)
-      const labels = isAdmin.value ? departments.value.map(d => d.name) : questions
+      const labels = isAdmin ? departments.value.map(d => d.name) : questions
 
-      chartInstance = new Chart(radar.value, {
+      chart = new Chart(radar.value, {
         type: 'radar',
         data: { labels, datasets: [
-          { label: isAdmin.value ? 'میانگین دپارتمان' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 },
+          { label: isAdmin ? 'میانگین دپارتمان' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 },
           { label: 'هدف', data: Array(labels.length).fill(5), borderColor: '#ef4444', borderWidth: 3, borderDash: [8,6] }
         ]},
-        options: { scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.2)' }, pointLabels: { color: '#fff', font: { size: 13 } } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+        options: { 
+          scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.2)' }, pointLabels: { color: '#fff', font: { size: 13 } } } },
+          plugins: { legend: { labels: { color: '#fff' } } }
+        }
       })
     }
 
@@ -226,7 +236,7 @@ createApp({
       target.value.evals = target.value.evals || []
       target.value.evals.push({ from: currentUser.value.code, scores: [...scores.value] })
       save()
-      alert('✅ ارزیابی با موفقیت ثبت شد')
+      alert('ارزیابی با موفقیت ثبت شد')
       target.value = null
       scores.value = Array(21).fill(3)
       drawChart()
@@ -239,9 +249,15 @@ createApp({
       reader.onload = ev => {
         const wb = XLSX.read(ev.target.result)
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
-        people.value = rows.map(r => ({ code: String(r.کد||''), name: r.نام||'', dept: r.واحد||'نامشخص', position: r.سمت||'', evals: [] }))
+        people.value = rows.map(r => ({ 
+          code: String(r.کد || ''), 
+          name: r.نام || '', 
+          dept: r.واحد || 'نامشخص', 
+          position: r.سمت || '', 
+          evals: [] 
+        }))
         save()
-        alert(`✅ ${people.value.length} نفر با موفقیت وارد شدند!`)
+        alert(`${people.value.length} نفر وارد شد!`)
         drawChart()
       }
       reader.readAsArrayBuffer(file)
@@ -256,7 +272,11 @@ createApp({
       }, 1000)
     })
 
-    return { isLoggedIn, isAdmin, loginCode, currentUser, people, target, scores, radar, shamsiDate, questions, avg, grade, percent, bonus, offset, departments, login, logout, submit, drawChart, importExcel }
+    return { 
+      loggedIn, code, currentUser, people, target, scores, radar, shamsiDate, questions, 
+      avg, grade, percent, bonus, offset, departments,
+      login, logout, submit, drawChart, importExcel, updateSlider
+    }
   }
 }).mount('#app')
 </script>
