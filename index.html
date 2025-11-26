@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ماهراد ۳۶۰ - ارزیابی عملکرد</title>
+  <title>ماهراد ۳۶۰ - ارزیابی عملکرد ۳۶۰ درجه</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,15 +14,15 @@
   <style>
     body{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-family:'Vazirmatn',sans-serif;min-height:100vh;margin:0}
     .glass{background:rgba(255,255,255,0.12);backdrop-filter:blur(20px);border-radius:20px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 15px 35px rgba(0,0,0,0.3)}
-    .card{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border-radius:18px;border:none;transition:.4s}
-    .card:hover{transform:translateY(-8px)}
-    .grade-circle{width:150px;height:150px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:5rem;font-weight:900;box-shadow:0 0 50px}
-    .A{background:#10b981;box-shadow:0 0 50px #10b98190}
-    .B{background:#3b82f6;box-shadow:0 0 50px #3b82f690}
-    .C{background:#fbbf24;box-shadow:0 0 50px #fbbf2490}
-    .D{background:#f97316;box-shadow:0 0 50px #f9731690}
-    .E{background:#ef4444;box-shadow:0 0 50px #ef444490}
-    .shamsi{font-size:3.2rem;font-weight:900;background:linear-gradient(45deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .card{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border-radius:18px;border:none;transition:all .4s}
+    .card:hover{transform:translateY(-10px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+    .grade-circle{width:150px;height:150px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:5rem;font-weight:900;box-shadow:0 0 60px}
+    .A{background:#10b981;box-shadow:0 0 60px #10b98190}
+    .B{background:#3b82f6;box-shadow:0 0 60px #3b82f690}
+    .C{background:#fbbf24;box-shadow:0 0 60px #fbbf2490}
+    .D{background:#f97316;box-shadow:0 0 60px #f9731690}
+    .E{background:#ef4444;box-shadow:0 0 60px #ef444490}
+    .shamsi{font-size:3.5rem;font-weight:900;background:linear-gradient(45deg,#fff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .progress-ring{position:relative;width:170px;height:170px}
     .progress-ring svg{transform:rotate(-90deg)}
     .progress-ring circle{fill:none;stroke:#334155;stroke-width:15}
@@ -30,103 +30,108 @@
     .progress-ring .text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.8rem;font-weight:900}
   </style>
 </head>
-<body class="p-4">
+<body class="p-3 p-md-5">
 
 <div id="app" v-cloak>
-  <!-- صفحه ورود -->
-  <div v-if="userRole === 'none'" class="d-flex align-items-center justify-content-center min-vh-100">
-    <div class="glass p-5 text-center" style="max-width:460px;width:100%">
+  <!-- ورود -->
+  <div v-if="!loggedIn" class="d-flex align-items-center justify-content-center min-vh-100">
+    <div class="glass p-5 text-center" style="max-width:480px;width:100%">
       <h1 class="display-2 fw-bold mb-5 text-warning">ماهراد ۳۶۰</h1>
-      <input v-model="loginCode" @keyup.enter="doLogin" class="form-control form-control-lg text-center mb-4 fs-1" placeholder="کد پرسنلی" autofocus>
-      <button @click="doLogin" class="btn btn-light btn-lg w-100 fs-3 fw-bold">ورود</button>
-      <small class="d-block mt-4 text-info">مدیر → کد: <code>admin</code></small>
+      <input v-model="loginCode" @keyup.enter="login" class="form-control form-control-lg text-center mb-4 fs-1" placeholder="کد پرسنلی" autofocus>
+      <button @click="login" class="btn btn-light btn-lg w-100 fs-3 fw-bold">ورود به سامانه</button>
+      <small class="d-block mt-4 text-info opacity-80">مدیر سیستم → کد: <code class="bg-dark px-3 py-1 rounded">admin</code></small>
     </div>
   </div>
 
   <!-- داشبورد -->
-  <div v-else class="glass p-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
+  <div v-else class="glass p-4 p-md-5 rounded-4">
+    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
       <div>
         <h1 class="shamsi mb-2">{{shamsiDate}}</h1>
         <h2 class="fw-bold fs-3">سامانه ارزیابی عملکرد ۳۶۰ درجه</h2>
       </div>
-      <button @click="doLogout" class="btn btn-outline-light btn-lg px-5">خروج</button>
+      <button @click="logout" class="btn btn-outline-light btn-lg px-5">خروج</button>
     </div>
 
     <!-- مدیر -->
-    <div v-if="userRole === 'admin'" class="row g-4 mb-5 text-center">
-      <div class="col-12">
-        <div class="card p-4">
-          <h3>آپلود اکسل پرسنل</h3>
-          <input type="file" @change="importExcel" accept=".xlsx" class="form-control form-control-lg">
-          <small class="text-warning">ستون‌ها: کد، نام، واحد، سمت</small>
-        </div>
+    <div v-if="isAdmin">
+      <div class="card p-4 mb-5">
+        <h3 class="mb-4 text-center">آپلود لیست پرسنل (فایل اکسل)</h3>
+        <input type="file" @change="importExcel" accept=".xlsx,.xls" class="form-control form-control-lg">
+        <small class="text-warning d-block mt-2 text-center">ستون‌های مورد نیاز: کد، نام، واحد، سمت</small>
       </div>
-      <div class="col-lg-4 col-md-6" v-for="d in departments">
-        <div class="card p-4">
-          <h4>{{d.name}}</h4>
-          <h2>{{d.count}} نفر</h2>
-          <div class="progress mt-3" style="height:32px">
-            <div class="progress-bar bg-success" :style="{width: d.avg*20 + '%'}">{{d.avg.toFixed(2)}}</div>
+
+      <div class="row g-4 text-center">
+        <div class="col-lg-4 col-md-6" v-for="d in departments" :key="d.name">
+          <div class="card p-4 h-100">
+            <h4 class="fw-bold">{{d.name}}</h4>
+            <h2 class="display-5">{{d.count}} نفر</h2>
+            <div class="progress mt-3" style="height:34px">
+              <div class="progress-bar bg-success fw-bold fs-5" :style="{width: (d.avg*20)+'%'}">{{d.avg.toFixed(2)}}</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- پرسنل -->
-    <div v-if="userRole === 'employee'" class="row g-4 text-center mb-5">
-      <div class="col-md-3 col-6"><div class="card p-4"><h5>تکمیل ارزیابی</h5><div class="progress-ring mx-auto"><svg width="170" height="170"><circle cx="85" cy="85" r="77"/><circle cx="85" cy="85" r="77" class="bar" stroke-dasharray="502" :stroke-dashoffset="offset"/></svg><div class="text">{{percent}}%</div></div></div></div>
-      <div class="col-md-3 col-6"><div class="card p-4"><h5>پاداش</h5><h1 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h1></div></div>
-      <div class="col-md-3 col-6"><div class="card p-4"><h5>گرید</h5><div class="grade-circle mx-auto" :class="grade">{{grade}}</div></div></div>
-      <div class="col-md-3 col-6"><div class="card p-4"><h5>امتیاز</h5><h1>{{avg.toFixed(2)}} از ۵</h1></div></div>
+    <div v-else class="row g-4 text-center mb-5">
+      <div class="col-md-3 col-6">
+        <div class="card p-4"><h5>تکمیل ارزیابی</h5>
+          <div class="progress-ring mx-auto"><svg width="170" height="170"><circle cx="85" cy="85" r="77"/><circle cx="85" cy="85" r="77" class="bar" stroke-dasharray="502" :stroke-dashoffset="offset"/></svg><div class="text">{{percent}}%</div></div>
+        </div>
+      </div>
+      <div class="col-md-3 col-6"><div class="card p-4"><h5>پاداش سه‌ماهه</h5><h1 class="text-warning">{{bonus.toLocaleString('fa-IR')}} تومان</h1></div></div>
+      <div class="col-md-3 col-6"><div class="card p-4"><h5>گرید عملکرد</h5><div class="grade-circle mx-auto" :class="grade">{{grade}}</div></div></div>
+      <div class="col-md-3 col-6"><div class="card p-4"><h5>امتیاز کل</h5><h1>{{avg.toFixed(2)}} از ۵</h1></div></div>
     </div>
 
-    <div class="row">
-      <div class="col-lg-8">
+    <div class="row mt-5">
+      <div class="col-lg-8 mb-4 mb-lg-0">
         <div class="card p-4">
-          <h3 class="text-center mb-4">{{userRole === 'admin' ? 'میانگین دپارتمان‌ها' : 'نمودار عملکرد من'}}</h3>
-          <canvas ref="radarChart" height="400"></canvas>
+          <h3 class="text-center mb-4">{{isAdmin ? 'میانگین عملکرد دپارتمان‌ها' : 'نمودار رادار عملکرد من'}}</h3>
+          <canvas ref="radar" height="420"></canvas>
         </div>
       </div>
       <div class="col-lg-4">
-        <div v-if="userRole === 'admin'" class="card p-4">
-          <h4>دپارتمان‌ها</h4>
-          <div v-for="d in departments" class="bg-white bg-opacity-10 rounded p-3 mb-3 cursor-pointer" @click="d.show=!d.show">
+        <div v-if="isAdmin" class="card p-4">
+          <h4 class="mb-4">دپارتمان‌ها</h4>
+          <div v-for="d in departments" class="bg-white bg-opacity-15 rounded p-3 mb-3" style="cursor:pointer" @click="d.show=!d.show">
             <strong>{{d.name}} ({{d.count}} نفر)</strong>
-            <div v-if="d.show" class="small mt-2">
-              <div v-for="p in d.people">{{p.name}} - {{p.position || '—'}}</div>
+            <div v-if="d.show" class="small mt-3 text-start">
+              <div v-for="p in d.people" class="mb-1">{{p.name}} - {{p.position||'—'}}</div>
             </div>
           </div>
         </div>
         <div v-else class="card p-4">
-          <h4>اطلاعات من</h4>
+          <h4>اطلاعات شخصی</h4>
           <p><strong>نام:</strong> {{currentUser.name}}</p>
-          <p><strong>واحد:</strong> {{currentUser.dept || '—'}}</p>
-          <p><strong>سمت:</strong> {{currentUser.position || '—'}}</p>
-          <p><strong>کد:</strong> {{currentUser.code}}</p>
+          <p><strong>واحد:</strong> {{currentUser.dept||'—'}}</p>
+          <p><strong>سمت:</strong> {{currentUser.position||'—'}}</p>
+          <p><strong>کد پرسنلی:</strong> {{currentUser.code}}</p>
         </div>
       </div>
     </div>
 
     <!-- ارزیابی فقط برای پرسنل -->
-    <div v-if="userRole === 'employee'">
-      <ul class="nav nav-tabs mt-5">
+    <div v-if="!isAdmin" class="mt-5">
+      <ul class="nav nav-tabs">
         <li class="nav-item"><a class="nav-link active fs-5" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
       </ul>
       <div class="tab-content">
         <div class="tab-pane active card p-4" id="eval">
-          <select v-model="selectedPerson" class="form-select form-select-lg mb-4">
-            <option :value="null">انتخاب همکار</option>
+          <select v-model="target" class="form-select form-select-lg mb-4">
+            <option :value="null">انتخاب همکار برای ارزیابی</option>
             <option v-for="p in people" :value="p" v-if="p.code !== currentUser.code">{{p.name}} - {{p.dept}}</option>
           </select>
-          <div v-if="selectedPerson" class="row g-3">
+          <div v-if="target" class="row g-3">
             <div class="col-md-6" v-for="(q,i) in questions" :key="i">
               <label class="form-label fw-bold">{{q}}</label>
-              <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(scores[i]-1)*25}%,#10b981 ${(scores[i]-1)*25}%)`">
+              <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(e.target.value-1)*25}%,#10b981 ${(e.target.value-1)*25}%)`">
               <div class="d-flex justify-content-between"><small>ضعیف</small><strong class="fs-3">{{scores[i]}}</strong><small>عالی</small></div>
             </div>
           </div>
-          <button v-if="selectedPerson" @click="submitEval" class="btn btn-success btn-lg w-100 mt-4">ارسال ارزیابی</button>
+          <button v-if="target" @click="submit" class="btn btn-success btn-lg w-100 mt-4 fw-bold">ارسال ارزیابی</button>
         </div>
       </div>
     </div>
@@ -135,82 +140,77 @@
 
 <script>
 const { createApp, ref, computed, onMounted, nextTick } = Vue
-let chart = null
+let chartInstance = null
 
 createApp({
   setup() {
-    const userRole = ref('none') // 'none' | 'admin' | 'employee'
+    const loggedIn = ref(false)
+    const isAdmin = ref(false)
     const loginCode = ref('')
     const currentUser = ref({})
     const people = ref([])
-    const selectedPerson = ref(null)
+    const target = ref(null)
     const scores = ref(Array(21).fill(3))
-    const radarChart = ref(null)
+    const radar = ref(null)
     const shamsiDate = ref('')
 
     const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"]
 
-    const load = () => { const d = localStorage.getItem('mahrad360_perfect'); if (d) people.value = JSON.parse(d) }
-    const save = () => localStorage.setItem('mahrad360_perfect', JSON.stringify(people.value))
+    const load = () => { const d = localStorage.getItem('mahrad360_ultimate'); if(d) people.value = JSON.parse(d) }
+    const save = () => localStorage.setItem('mahrad360_ultimate', JSON.stringify(people.value))
 
-    const doLogin = async () => {
-      let user = null
+    const login = async () => {
       if (loginCode.value === 'admin') {
-        userRole.value = 'admin'
-        user = { name: 'مدیر سیستم', code: 'admin' }
+        isAdmin.value = true
+        currentUser.value = { name: 'مدیر سیستم', code: 'admin' }
       } else {
-        user = people.value.find(p => p.code === loginCode.value)
-        if (!user) return alert('کد اشتباه!')
-        userRole.value = 'employee'
+        const user = people.value.find(p => p.code === loginCode.value)
+        if (!user) return alert('کد پرسنلی اشتباه است!')
+        isAdmin.value = false
+        currentUser.value = user
       }
-      currentUser.value = user
+      loggedIn.value = true
       await nextTick()
       drawChart()
     }
 
-    const doLogout = () => { userRole.value = 'none'; loginCode.value = '' }
+    const logout = () => { loggedIn.value = false; loginCode.value = '' }
 
     const departments = computed(() => {
+      if (!people.value.length) return []
       const map = {}
       people.value.forEach(p => {
-        const d = p.dept || 'نامشخص'
-        if (!map[d]) map[d] = { name: d, count: 0, people: [], avg: 0, show: false }
-        map[d].count++
-        map[d].people.push(p)
+        const key = p.dept || 'نامشخص'
+        if (!map[key]) map[key] = { name: key, count: 0, people: [], avg: 0, show: false }
+        map[key].count++
+        map[key].people.push(p)
       })
-      return Object.values(map).map(dept => {
-        dept.avg = dept.count ? dept.people.reduce((s, p) => s + calcAvg(p), 0) / dept.count : 0
-        return dept
-      })
+      const deps = Object.values(map)
+      deps.forEach(d => d.avg = d.people.reduce((s,p) => s + calcAvg(p), 0) / d.count || 0)
+      return deps
     })
 
     const calcAvg = p => p.evals?.length ? p.evals.reduce((a,e) => a + e.scores.reduce((x,y)=>x+y,0),0)/(p.evals.length*21) : 0
-    const avg = computed(() => userRole.value === 'employee' ? calcAvg(currentUser.value) : 0)
+    const avg = computed(() => isAdmin.value ? 0 : calcAvg(currentUser.value))
     const grade = computed(() => avg.value >= 4.5 ? 'A' : avg.value >= 4 ? 'B' : avg.value >= 3.5 ? 'C' : avg.value >= 3 ? 'D' : 'E')
     const percent = computed(() => Math.round((avg.value / 5) * 100))
     const bonus = computed(() => Math.round(avg.value * 1800000 * (grade.value === 'D' ? 0.8 : grade.value === 'E' ? 0.5 : 1)))
     const offset = computed(() => 502 - (502 * percent.value / 100))
 
     const drawChart = () => {
-      if (!radarChart.value) return
-      if (chart) chart.destroy()
-      const isAdmin = userRole.value === 'admin'
-      const data = isAdmin ? departments.value.map(d => d.avg) : currentUser.value.evals?.length ? currentUser.value.evals.reduce((a,e)=>e.scores.map((s,i)=>(a[i]||0)+s), Array(21).fill(0)).map(v => v / currentUser.value.evals.length) : Array(21).fill(3)
-      const labels = isAdmin ? departments.value.map(d => d.name) : questions
-
-      chart = new Chart(radarChart.value, {
-        type: 'radar',
-        data: { labels, datasets: [{ label: isAdmin ? 'میانگین' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 }] },
-        options: { scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 } } } }
-      })
+      if (!radar.value) return
+      if (chartInstance) chartInstance.destroy()
+      const data = isAdmin.value ? departments.value.map(d => d.avg) : currentUser.value.evals?.length ? currentUser.value.evals.reduce((a,e)=>e.scores.map((s,i)=>(a[i]||0)+s),Array(21).fill(0)).map(v=>v/currentUser.value.evals.length) : Array(21).fill(3)
+      const labels = isAdmin.value ? departments.value.map(d=>d.name) : questions
+      chartInstance = new Chart(radar.value, {type:'radar',data:{labels,datasets:[{label:isAdmin.value?'میانگین':'عملکرد من',data,backgroundColor:'rgba(99,102,241,0.3)',borderColor:'#6366f1',borderWidth:4}]},options:{scales:{r:{min:0,max:5,ticks:{stepSize:1}}}}})
     }
 
-    const submitEval = () => {
-      selectedPerson.value.evals = selectedPerson.value.evals || []
-      selectedPerson.value.evals.push({ from: currentUser.value.code, scores: [...scores.value] })
+    const submit = () => {
+      target.value.evals = target.value.evals || []
+      target.value.evals.push({ from: currentUser.value.code, scores: [...scores.value] })
       save()
-      alert('ارزیابی ثبت شد')
-      selectedPerson.value = null
+      alert('ارزیابی با موفقیت ثبت شد ✅')
+      target.value = null
       scores.value = Array(21).fill(3)
       drawChart()
     }
@@ -222,9 +222,9 @@ createApp({
       reader.onload = ev => {
         const wb = XLSX.read(ev.target.result)
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
-        people.value = rows.map(r => ({ code: String(r.کد||''), name: r.نام||'', dept: r.واحد||'نامشخص', position: r.سمت||'', evals: [] }))
+        people.value = rows.map(r => ({code:String(r.کد||''),name:r.نام||'',dept:r.واحد||'نامشخص',position:r.سمت||'',evals:[]}))
         save()
-        alert(`${people.value.length} نفر وارد شد`)
+        alert(`${people.value.length} نفر با موفقیت وارد شد!`)
         drawChart()
       }
       reader.readAsArrayBuffer(file)
@@ -232,6 +232,7 @@ createApp({
 
     onMounted(() => {
       load()
+      drawChart()
       setInterval(() => {
         const d = new Date()
         const j = jalaali.toJalaali(d.getFullYear(), d.getMonth()+1, d.getDate())
@@ -239,7 +240,7 @@ createApp({
       }, 1000)
     })
 
-    return { userRole, loginCode, currentUser, people, selectedPerson, scores, radarChart, shamsiDate, questions, avg, grade, percent, bonus, offset, departments, doLogin, doLogout, submitEval, drawChart, importExcel }
+    return { loggedIn, isAdmin, loginCode, currentUser, people, target, scores, radar, shamsiDate, questions, avg, grade, percent, bonus, offset, departments, login, logout, submit, importExcel, drawChart }
   }
 }).mount('#app')
 </script>
