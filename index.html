@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ماهراد ۳۶۰ - ارزیابی عملکرد</title>
-  <!-- favicon رو هم درست کردم که 404 نده -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -92,7 +91,7 @@
       <div class="col-lg-4">
         <div v-if="userRole === 'admin'" class="card p-4">
           <h4>دپارتمان‌ها</h4>
-          <div v-for="d in departments" class="bg-white bg-opacity-10 rounded p-3 mb-3 cursor-pointer" @click="d.show = !d.show">
+          <div v-for="d in departments" class="bg-white bg-opacity-10 rounded p-3 mb-3 cursor-pointer" @click="d.show=!d.show">
             <strong>{{d.name}} ({{d.count}} نفر)</strong>
             <div v-if="d.show" class="small mt-2">
               <div v-for="p in d.people">{{p.name}} - {{p.position || '—'}}</div>
@@ -109,24 +108,26 @@
       </div>
     </div>
 
-    <!-- ارزیابی -->
-    <ul class="nav nav-tabs mt-5">
-      <li class="nav-item"><a class="nav-link active fs-5" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
-    </ul>
-    <div class="tab-content">
-      <div class="tab-pane active card p-4" id="eval">
-        <select v-model="selectedPerson" class="form-select form-select-lg mb-4">
-          <option :value="null">انتخاب همکار</option>
-          <option v-for="p in people" :value="p" v-if="p.code !== currentUser.code">{{p.name}} - {{p.dept}}</option>
-        </select>
-        <div v-if="selectedPerson" class="row g-3">
-          <div class="col-md-6" v-for="(q,i) in questions" :key="i">
-            <label class="form-label fw-bold">{{q}}</label>
-            <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(scores[i]-1)*25}%,#10b981 ${(scores[i]-1)*25}%)`">
-            <div class="d-flex justify-content-between"><small>ضعیف</small><strong class="fs-3">{{scores[i]}}</strong><small>عالی</small></div>
+    <!-- ارزیابی فقط برای پرسنل -->
+    <div v-if="userRole === 'employee'">
+      <ul class="nav nav-tabs mt-5">
+        <li class="nav-item"><a class="nav-link active fs-5" data-bs-toggle="tab" href="#eval">ارزیابی همکاران</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane active card p-4" id="eval">
+          <select v-model="selectedPerson" class="form-select form-select-lg mb-4">
+            <option :value="null">انتخاب همکار</option>
+            <option v-for="p in people" :value="p" v-if="p.code !== currentUser.code">{{p.name}} - {{p.dept}}</option>
+          </select>
+          <div v-if="selectedPerson" class="row g-3">
+            <div class="col-md-6" v-for="(q,i) in questions" :key="i">
+              <label class="form-label fw-bold">{{q}}</label>
+              <input type="range" class="form-range" min="1" max="5" v-model.number="scores[i]" @input="e=>e.target.style.background=`linear-gradient(to right,#ef4444 ${(scores[i]-1)*25}%,#10b981 ${(scores[i]-1)*25}%)`">
+              <div class="d-flex justify-content-between"><small>ضعیف</small><strong class="fs-3">{{scores[i]}}</strong><small>عالی</small></div>
+            </div>
           </div>
+          <button v-if="selectedPerson" @click="submitEval" class="btn btn-success btn-lg w-100 mt-4">ارسال ارزیابی</button>
         </div>
-        <button v-if="selectedPerson" @click="submitEval" class="btn btn-success btn-lg w-100 mt-4">ارسال ارزیابی</button>
       </div>
     </div>
   </div>
@@ -149,19 +150,20 @@ createApp({
 
     const questions = ["دقت و کیفیت کار","سرعت انجام کار","همکاری تیمی","مسئولیت پذیری","نوآوری و خلاقیت","انضباط کاری","ارتباطات موثر","حل مسئله","یادگیری و توسعه","رهبری","مدیریت زمان","رضایت مشتری","تعهد سازمانی","مدیریت استرس","انعطاف پذیری","کار تحت فشار","ارائه گزارش","رعایت ایمنی","بهبود مستمر","مشارکت در جلسات","حفظ محرمانگی"]
 
-    const load = () => { const d = localStorage.getItem('mahrad360_final_2025'); if (d) people.value = JSON.parse(d) }
-    const save = () => localStorage.setItem('mahrad360_final_2025', JSON.stringify(people.value))
+    const load = () => { const d = localStorage.getItem('mahrad360_perfect'); if (d) people.value = JSON.parse(d) }
+    const save = () => localStorage.setItem('mahrad360_perfect', JSON.stringify(people.value))
 
     const doLogin = async () => {
+      let user = null
       if (loginCode.value === 'admin') {
         userRole.value = 'admin'
-        currentUser.value = { name: 'مدیر سیستم', code: 'admin' }
+        user = { name: 'مدیر سیستم', code: 'admin' }
       } else {
-        const user = people.value.find(p => p.code === loginCode.value)
+        user = people.value.find(p => p.code === loginCode.value)
         if (!user) return alert('کد اشتباه!')
         userRole.value = 'employee'
-        currentUser.value = user
       }
+      currentUser.value = user
       await nextTick()
       drawChart()
     }
@@ -183,7 +185,7 @@ createApp({
     })
 
     const calcAvg = p => p.evals?.length ? p.evals.reduce((a,e) => a + e.scores.reduce((x,y)=>x+y,0),0)/(p.evals.length*21) : 0
-    const avg = computed(() => userRole.value === 'admin' ? 0 : calcAvg(currentUser.value))
+    const avg = computed(() => userRole.value === 'employee' ? calcAvg(currentUser.value) : 0)
     const grade = computed(() => avg.value >= 4.5 ? 'A' : avg.value >= 4 ? 'B' : avg.value >= 3.5 ? 'C' : avg.value >= 3 ? 'D' : 'E')
     const percent = computed(() => Math.round((avg.value / 5) * 100))
     const bonus = computed(() => Math.round(avg.value * 1800000 * (grade.value === 'D' ? 0.8 : grade.value === 'E' ? 0.5 : 1)))
@@ -192,16 +194,13 @@ createApp({
     const drawChart = () => {
       if (!radarChart.value) return
       if (chart) chart.destroy()
-      const data = userRole.value === 'admin' 
-        ? departments.value.map(d => d.avg)
-        : currentUser.value.evals?.length 
-          ? currentUser.value.evals.reduce((a,e)=>e.scores.map((s,i)=>(a[i]||0)+s), Array(21).fill(0)).map(v => v / currentUser.value.evals.length)
-          : Array(21).fill(3)
-      const labels = userRole.value === 'admin' ? departments.value.map(d => d.name) : questions
+      const isAdmin = userRole.value === 'admin'
+      const data = isAdmin ? departments.value.map(d => d.avg) : currentUser.value.evals?.length ? currentUser.value.evals.reduce((a,e)=>e.scores.map((s,i)=>(a[i]||0)+s), Array(21).fill(0)).map(v => v / currentUser.value.evals.length) : Array(21).fill(3)
+      const labels = isAdmin ? departments.value.map(d => d.name) : questions
 
       chart = new Chart(radarChart.value, {
         type: 'radar',
-        data: { labels, datasets: [{ label: userRole.value === 'admin' ? 'میانگین' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 }] },
+        data: { labels, datasets: [{ label: isAdmin ? 'میانگین' : 'عملکرد من', data, backgroundColor: 'rgba(99,102,241,0.3)', borderColor: '#6366f1', borderWidth: 4 }] },
         options: { scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 } } } }
       })
     }
@@ -226,6 +225,7 @@ createApp({
         people.value = rows.map(r => ({ code: String(r.کد||''), name: r.نام||'', dept: r.واحد||'نامشخص', position: r.سمت||'', evals: [] }))
         save()
         alert(`${people.value.length} نفر وارد شد`)
+        drawChart()
       }
       reader.readAsArrayBuffer(file)
     }
